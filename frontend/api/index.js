@@ -137,11 +137,13 @@ app.post('/api/auth/login', (req,res) => {
 
 // Google OAuth Login
 app.post('/api/auth/google', (req,res) => {
-  const { token } = req.body;
-  if (!token) return res.status(400).json({ success:false, message:'Google token required.' });
-
   try {
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    const { token } = req.body || {};
+    if (!token) return res.status(400).json({ success:false, message:'Google token required.' });
+
+    const parts = token.split('.');
+    if (parts.length < 2) return res.status(401).json({ success:false, message:'Invalid Google token format.' });
+    const payload = JSON.parse(Buffer.from(parts[1], 'base64').toString());
     const email = payload.email;
     const name = payload.name || payload.given_name || 'Google User';
     const picture = payload.picture || '';
