@@ -74,7 +74,6 @@ export const api = {
   getWorkerEarnings: (id) => request(id ? `/worker/earnings/${id}` : '/worker/earnings'),
   updateWorkerLocation: (payload) => request('/worker/location', { method: 'PATCH', body: JSON.stringify(payload) }),
   getWorkerLocation: (workerId) => request(`/worker/location/${workerId}`),
-  getJobWorkerLocation: (jobId) => request(`/worker/location/job/${jobId}`),
 
   // Society Admin
   getSocietyDashboard: (id) => request(id ? `/society/dashboard/${id}` : '/society/dashboard'),
@@ -237,9 +236,9 @@ export const api = {
   getCooperativeSurplus: () => request('/dividend/surplus'),
 
   // Innovation 8: AR Repair Guidance
-  getRepairGuide: (category, issueType) => request(`/ar-guidance/guide/${encodeURIComponent(category)}${issueType ? `/${encodeURIComponent(issueType)}` : ''}`),
-  getAllRepairGuides: () => request('/ar-guidance/guides'),
-  getToolRecommendations: (category) => request(`/ar-guidance/tools/${encodeURIComponent(category)}`),
+  getRepairGuide: (category, issueType) => request(`/ar-guides/${encodeURIComponent(category)}${issueType ? `/${encodeURIComponent(issueType)}` : ''}`),
+  getAllRepairGuides: () => request('/ar-guides'),
+  getToolRecommendations: (category) => request(`/ar-tools/${encodeURIComponent(category)}`),
 
   // Urban Company Style: Subscription Packs & Instant Booking
   getSubscriptionPacks: (serviceCategory) => request(`/subscription/packs/${encodeURIComponent(serviceCategory)}`),
