@@ -1,9 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, Component } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { DemoScenarioModal } from './components/demo/DemoScenarioModal';
+
+class ErrorBoundary extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="text-center max-w-md">
+          <div className="text-4xl mb-3">⚠️</div>
+          <h2 className="text-lg font-bold text-slate-800 mb-2">Something went wrong</h2>
+          <p className="text-sm text-slate-500 mb-4">{this.state.error.message}</p>
+          <button onClick={() => { this.setState({ error: null }); window.location.reload(); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+    return this.props.children;
+  }
+}
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
@@ -52,6 +72,7 @@ export function App() {
       <Navbar onOpenDemoScenarios={() => setDemoModalOpen(true)} />
 
       <main className="flex-1">
+        <ErrorBoundary>
         <Routes>
           <Route path="/" element={<LandingPage onOpenDemoScenarios={() => setDemoModalOpen(true)} />} />
           <Route path="/login" element={<LoginPage />} />
@@ -94,6 +115,7 @@ export function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </main>
 
       <Footer />
