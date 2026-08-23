@@ -100,11 +100,13 @@ function authenticate(req, res, next) {
     if (user) { req.user = user; return next(); }
   }
   const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ success:false, message:'No auth token.' });
+  if (!auth || !auth.startsWith('Bearer ')) return res.status(401).json({ success:false, message:'No auth token.' });
   try {
     const decoded = jwt.verify(auth.split(' ')[1], JWT_SECRET);
-    const user = store.findById('users', decoded.id);
-    if (!user) return res.status(401).json({ success:false, message:'User not found.' });
+    let user = store.findById('users', decoded.id);
+    if (!user) {
+      user = { id:decoded.id, name:'User', email:'', role:decoded.role||'customer', password:'' };
+    }
     req.user = user;
     next();
   } catch(e) { return res.status(401).json({ success:false, message:'Invalid token.' }); }
@@ -165,9 +167,14 @@ app.post('/api/auth/google', (req,res) => {
 app.post('/api/auth/register', (req,res) => {
   const { name, email, password, mobile, role='customer', customerType='Household' } = req.body;
   if (!name || !email || !password) return res.status(400).json({ success:false, message:'Name, email and password required.' });
-  const existing = store.findOne('users', { email });
-  if (existing) return res.status(400).json({ success:false, message:'Email already registered.' });
-  const user = store.create('users', { id:`USR-${Date.now()}`, name, email, password, mobile:mobile||'', role, customerType, location:{lat:28.6140,lng:77.2095}, address:'Delhi NCR' });
+  let user = store.findOne('users', { email });
+  if (user) {
+    if (user.password !== password) return res.status(400).json({ success:false, message:'Email already registered with different password. Use login instead.' });
+    const token = jwt.sign({ id:user.id, role:user.role }, JWT_SECRET, { expiresIn:'24h' });
+    const { password:_, ...safe } = user;
+    return res.json({ success:true, token, user:safe });
+  }
+  user = store.create('users', { id:`USR-${Date.now()}`, name, email, password, mobile:mobile||'', role, customerType, location:{lat:28.6140,lng:77.2095}, address:'Delhi NCR' });
   const token = jwt.sign({ id:user.id, role:user.role }, JWT_SECRET, { expiresIn:'24h' });
   const { password:_, ...safe } = user;
   return res.json({ success:true, token, user:safe });
