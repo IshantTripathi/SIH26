@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { useLanguage } from '../../context/LanguageContext';
-import { api } from '../../api/client';
+import { useLanguage } from '../context/LanguageContext';
+import { api } from '../api/client';
 import { BarChart3, Users, Briefcase, Heart, Leaf, Building2, TrendingUp, Award, Globe } from 'lucide-react';
 
 export function CommunityImpactPage() {
