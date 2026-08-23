@@ -15,7 +15,8 @@ import {
   ArrowRight,
   RefreshCw,
   AlertCircle,
-  Power
+  Power,
+  ShieldAlert
 } from 'lucide-react';
 import { StatCard, WorkloadBadge } from '../../components/common/StatCard';
 import { Link } from 'react-router-dom';
@@ -32,6 +33,8 @@ export function WorkerDashboard() {
   const [togglingStatus, setTogglingStatus] = useState(false);
   const [otpInput, setOtpInput] = useState('');
   const [updatingJobId, setUpdatingJobId] = useState(null);
+  const [sosModalJob, setSosModalJob] = useState(null);
+  const [sosMessage, setSosMessage] = useState('');
 
   useEffect(() => {
     fetchWorkerData();
@@ -95,6 +98,32 @@ export function WorkerDashboard() {
     }
     setUpdatingJobId(null);
   };
+
+  const handleSos = async () => {
+    if (!sosModalJob) return;
+    try {
+      const res = await api.sendSosAlert(sosModalJob.id, { type: 'worker', message: sosMessage || 'Worker emergency assistance needed' });
+      if (res.success) {
+        setSosModalJob(null);
+        setSosMessage('');
+        alert('SOS alert sent! Society Admin & Federation Admin have been notified.');
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  // Punctuality calculation
+  const completedJobs = jobs.filter(j => j.status === 'COMPLETED');
+  let onTimeCount = 0;
+  for (const j of completedJobs) {
+    const history = j.statusHistory || [];
+    const accepted = history.find(h => h.status === 'ACCEPTED');
+    const arrived = history.find(h => h.status === 'ARRIVED');
+    if (accepted?.timestamp && arrived?.timestamp) {
+      const diffMin = (new Date(arrived.timestamp) - new Date(accepted.timestamp)) / 60000;
+      if (diffMin <= 20) onTimeCount++;
+    }
+  }
+  const punctualityPercent = completedJobs.length > 0 ? Math.round((onTimeCount / completedJobs.length) * 100) : 100;
 
   const activeJob = jobs.find(
     (j) =>
@@ -178,6 +207,13 @@ export function WorkerDashboard() {
           subtitle={`Based on ${profile?.ratingCount || 28} verified reviews`}
           icon={Award}
           color="amber"
+        />
+        <StatCard
+          title="Punctuality"
+          value={`${punctualityPercent}%`}
+          subtitle={`On-time arrivals (${onTimeCount}/${completedJobs.length || 0})`}
+          icon={Clock}
+          color={punctualityPercent >= 90 ? 'green' : 'amber'}
         />
         <StatCard
           title={t('worker.welfare', 'Welfare Shield')}
@@ -336,6 +372,14 @@ export function WorkerDashboard() {
 
                 {/* State Transition Actions */}
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+                  <button
+                    onClick={() => { setSosModalJob(activeJob); setSosMessage(''); }}
+                    className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-xs font-bold border border-red-200 flex items-center gap-1"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    SOS Emergency
+                  </button>
+                  <div className="flex items-center gap-2">
                   {activeJob.status === 'ACCEPTED' && (
                     <button
                       onClick={() => handleAdvanceJob(activeJob.id, 'ON_THE_WAY')}
@@ -393,6 +437,7 @@ export function WorkerDashboard() {
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
             )}
@@ -493,6 +538,38 @@ export function WorkerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* SOS Modal */}
+      {sosModalJob && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-red-300 w-full max-w-md p-6 space-y-4 animate-in zoom-in-95">
+            <h3 className="text-base font-bold text-red-700 flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5" />
+              SOS Emergency Alert
+            </h3>
+            <p className="text-xs text-slate-600">
+              This will immediately notify the <strong>Society Admin</strong> and <strong>Federation Admin</strong>. A field team will be dispatched.
+            </p>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Emergency Message (optional)</label>
+              <textarea
+                rows="2"
+                value={sosMessage}
+                onChange={(e) => setSosMessage(e.target.value)}
+                placeholder="Describe the emergency..."
+                className="w-full px-3 py-2 border border-red-300 rounded-lg text-xs"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button onClick={() => setSosModalJob(null)} className="px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
+              <button onClick={handleSos} className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                Send SOS Alert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

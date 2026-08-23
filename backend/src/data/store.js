@@ -41,6 +41,12 @@ class DataStore {
       { id: 'TOOL-004', name: 'Ladder 12ft Aluminium', category: 'General', totalUnits: 3, availableUnits: 2, depositAmount: 300, perDayFee: 15, societyId: 'SOC-DEMO-002', condition: 'Good', borrowedBy: [] }
     ];
     this.toolLoans = [];
+    this.packCredits = [
+      { id: 'PACK-001', customerId: 'USR-CUST-001', societyId: 'SOC-DEMO-001', serviceName: 'Sahakar Monthly Pack', creditsTotal: 10, creditsUsed: 0, pricePaid: 799, purchasedAt: new Date().toISOString(), expiresAt: null, noExpiry: true, status: 'Active' }
+    ];
+    this.guaranteePool = { balance: 50000, minWorkerEarnings: 15000, period: 'Monthly', totalDistributed: 0 };
+    this.sosAlerts = [];
+    this.rescheduleLog = [];
   }
 
   // Generic collection accessor

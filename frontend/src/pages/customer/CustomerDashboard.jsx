@@ -20,7 +20,11 @@ import {
   ArrowRight,
   RefreshCw,
   Building,
-  Home
+  Home,
+  Timer,
+  RotateCcw,
+  ShieldAlert,
+  Package
 } from 'lucide-react';
 import { AllocationBreakdown } from '../../components/allocation/AllocationBreakdown';
 import { InvoiceModal } from '../../components/common/InvoiceModal';
@@ -87,8 +91,24 @@ export function CustomerDashboard() {
   // Payment form
   const [paymentMethod, setPaymentMethod] = useState('UPI Demo');
 
+  // New: Hourly duration + pack credits
+  const [durationHours, setDurationHours] = useState(1);
+  const [usePackCredit, setUsePackCredit] = useState(false);
+  const [packInfo, setPackInfo] = useState(null);
+  const [top3Candidates, setTop3Candidates] = useState([]);
+  const [selectedCandidate, setSelectedCandidate] = useState(null);
+
+  // New: ETA + Reschedule + SOS
+  const [etaData, setEtaData] = useState({});
+  const [rescheduleJob, setRescheduleJob] = useState(null);
+  const [rescheduleDate, setRescheduleDate] = useState(new Date().toISOString().split('T')[0]);
+  const [rescheduleTime, setRescheduleTime] = useState('Immediately');
+  const [sosModalJob, setSosModalJob] = useState(null);
+  const [sosMessage, setSosMessage] = useState('');
+
   useEffect(() => {
     fetchActiveJobs();
+    fetchPackCredits();
     const interval = setInterval(fetchActiveJobs, 4000);
     return () => clearInterval(interval);
   }, []);
@@ -98,11 +118,32 @@ export function CustomerDashboard() {
       const res = await api.getJobs();
       if (res.success) {
         setActiveJobs(res.jobs);
+        // Fetch ETA for active jobs
+        for (const job of res.jobs) {
+          if (['ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS', 'ACCEPTED'].includes(job.status)) {
+            try {
+              const etaRes = await api.getJobEta(job.id);
+              if (etaRes.success) {
+                setEtaData(prev => ({ ...prev, [job.id]: etaRes.eta }));
+              }
+            } catch (e) {}
+          }
+        }
       }
     } catch (err) {
       console.error(err);
     }
     setLoadingJobs(false);
+  };
+
+  const fetchPackCredits = async () => {
+    try {
+      const res = await api.getPackCredits();
+      if (res.success) {
+        setPackInfo(res);
+        if (res.creditsRemaining > 0) setUsePackCredit(true);
+      }
+    } catch (err) {}
   };
 
   // Real-time intent classification
@@ -152,13 +193,18 @@ export function CustomerDashboard() {
         scheduledDate,
         scheduledTime,
         customerAddress,
-        customerLocation: user?.location || { lat: 28.6140, lng: 77.2095 }
+        customerLocation: user?.location || { lat: 28.6140, lng: 77.2095 },
+        durationHours,
+        usePackCredit
       });
 
       if (res.success) {
         setLatestAllocationResult(res.allocationResult);
-        setBookingSuccess(`Service request created successfully! Matched worker: ${res.job?.workerName || 'Worker Assigned'}`);
+        setTop3Candidates(res.job?.top3Candidates || []);
+        setSelectedCandidate(null);
+        setBookingSuccess(`Service request created successfully! Matched worker: ${res.job?.workerName || 'Worker Assigned'}${res.job?.packCreditUsed ? ' (Pack credit used — Free!)' : ''}`);
         await fetchActiveJobs();
+        await fetchPackCredits();
         try {
           confetti({ particleCount: 50, spread: 50, origin: { y: 0.7 } });
         } catch (e) {}
@@ -240,6 +286,51 @@ export function CustomerDashboard() {
     try {
       const res = await api.resendOtp(jobId);
       if (res.success) { alert(`New OTP: ${res.otp} — share only at service completion.`); await fetchActiveJobs(); }
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleReschedule = async () => {
+    if (!rescheduleJob) return;
+    try {
+      const res = await api.rescheduleJob(rescheduleJob.id, { scheduledDate: rescheduleDate, scheduledTime: rescheduleTime });
+      if (res.success) {
+        setRescheduleJob(null);
+        alert('Job rescheduled successfully (free within 2 hours).');
+        await fetchActiveJobs();
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleReService = async (jobId) => {
+    if (!window.confirm('Request free re-service? A new worker will be assigned.')) return;
+    try {
+      const res = await api.requestReService(jobId);
+      if (res.success) {
+        alert(res.message);
+        await fetchActiveJobs();
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleSos = async () => {
+    if (!sosModalJob) return;
+    try {
+      const res = await api.sendSosAlert(sosModalJob.id, { type: 'customer', message: sosMessage || 'Customer emergency assistance needed' });
+      if (res.success) {
+        setSosModalJob(null);
+        setSosMessage('');
+        alert('SOS alert sent! Society Admin & Federation Admin have been notified.');
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  const handlePurchasePack = async () => {
+    try {
+      const res = await api.purchasePack();
+      if (res.success) {
+        alert(res.message);
+        await fetchPackCredits();
+      }
     } catch (err) { alert(err.message); }
   };
 
@@ -502,6 +593,63 @@ export function CustomerDashboard() {
                 </div>
               </div>
 
+              {/* Duration Picker (1-4hr) + Pack Credit */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                    <Timer className="w-3.5 h-3.5 text-blue-700" />
+                    Duration (Hourly Service)
+                  </label>
+                  <div className="grid grid-cols-4 gap-2">
+                    {[1, 2, 3, 4].map((h) => (
+                      <button
+                        key={h}
+                        type="button"
+                        onClick={() => setDurationHours(h)}
+                        className={`py-2 rounded-lg text-xs font-bold border transition-all ${
+                          durationHours === h
+                            ? 'bg-blue-900 text-white border-blue-950'
+                            : 'bg-slate-50 text-slate-700 border-slate-200 hover:bg-slate-100'
+                        }`}
+                      >
+                        {h}hr
+                      </button>
+                    ))}
+                  </div>
+                  <div className="text-[10px] text-slate-400 mt-1">
+                    {durationHours > 1 ? `Multi-task: ₹${(intentData?.basePrice || 500) * durationHours} (${durationHours} × ₹${intentData?.basePrice || 500})` : 'Single task base rate'}
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-semibold text-slate-700 mb-1 flex items-center gap-1">
+                    <Package className="w-3.5 h-3.5 text-emerald-700" />
+                    Sahakar Monthly Pack
+                  </label>
+                  {packInfo?.creditsRemaining > 0 ? (
+                    <div className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl">
+                      <div className="flex items-center justify-between">
+                        <div className="text-xs font-bold text-emerald-900">{packInfo.creditsRemaining} credits remaining</div>
+                        <button
+                          type="button"
+                          onClick={() => setUsePackCredit(!usePackCredit)}
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${usePackCredit ? 'bg-emerald-600 text-white' : 'bg-slate-200 text-slate-700'}`}
+                        >
+                          {usePackCredit ? 'APPLIED ✓' : 'USE CREDIT'}
+                        </button>
+                      </div>
+                      <div className="text-[10px] text-emerald-700 mt-0.5">Free service — no deduction from worker wage</div>
+                    </div>
+                  ) : (
+                    <div className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl">
+                      <div className="text-xs font-semibold text-slate-700">No pack active</div>
+                      <button type="button" onClick={handlePurchasePack} className="mt-1 text-[11px] bg-blue-900 text-white px-2 py-0.5 rounded font-bold">Buy Pack ₹799/10 services</button>
+                      <div className="text-[10px] text-slate-400 mt-0.5">No 13-day expiry — cooperative-owned</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+
               <div className="text-[11px] text-slate-500 bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                 {t('common.demoDisclaimer', 'Demo contribution model — values are configurable and are not presented as statutory rates.')}
               </div>
@@ -559,6 +707,66 @@ export function CustomerDashboard() {
                   alert(`Explainable Twin:\nTop: ${r.recommended.workerName} (${r.recommended.totalScore})\nCounterfactual: ${r.counterfactual?.explanation || 'N/A'}\nNote: ${r.fairnessNote}`);
                 }catch(e){alert(e.message)}
               }} className="w-full mt-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 py-1.5 rounded-lg text-xs font-bold">🔍 Explainable Twin — Why this worker?</button>
+            </div>
+          )}
+
+          {/* Top-3 Ranked Picker */}
+          {top3Candidates.length > 0 && (
+            <div className="bg-white border-2 border-blue-200 rounded-2xl p-6 shadow-sm space-y-3 animate-in fade-in">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2">
+                  <ShieldCheck className="w-5 h-5 text-blue-600" />
+                  Top 3 Ranked Workers — Choose or Auto-Assign
+                </h3>
+                <span className="text-[10px] bg-blue-100 text-blue-800 font-bold px-2 py-0.5 rounded">
+                  Tap to Select
+                </span>
+              </div>
+              <div className="space-y-2">
+                {top3Candidates.map((c, idx) => (
+                  <div
+                    key={c.workerId}
+                    onClick={() => setSelectedCandidate(c)}
+                    className={`p-3 rounded-xl border-2 cursor-pointer transition-all ${
+                      selectedCandidate?.workerId === c.workerId
+                        ? 'border-blue-600 bg-blue-50 shadow-md'
+                        : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-slate-50'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-bold ${idx === 0 ? 'bg-amber-400 text-white' : idx === 1 ? 'bg-slate-300 text-slate-700' : 'bg-orange-300 text-orange-800'}`}>
+                          #{idx + 1}
+                        </div>
+                        <div>
+                          <div className="font-bold text-sm text-slate-900">{c.workerName}</div>
+                          <div className="text-[10px] text-slate-500">
+                            {c.ratingAvg}★ • {c.distanceKm}km • ETA {c.etaMinutes}min
+                          </div>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-base font-bold text-blue-900 font-mono">{c.totalScore}</div>
+                        <div className="text-[10px] text-slate-400">Score</div>
+                      </div>
+                    </div>
+                    {c.breakdown && (
+                      <div className="mt-2 flex flex-wrap gap-1 text-[9px]">
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded">Skill:{c.breakdown.skillScore}</span>
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded">Cert:{c.breakdown.certScore}</span>
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded">Avail:{c.breakdown.availScore}</span>
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded">Dist:{c.breakdown.distScore}</span>
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded">Work:{c.breakdown.workloadScore}</span>
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded">Fair:{c.breakdown.fairnessScore}</span>
+                        <span className="bg-slate-100 px-1.5 py-0.5 rounded">Rel:{c.breakdown.reliabilityScore}</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="text-[10px] text-slate-400 text-center">
+                Auto-assigns in 60s if no selection. Algorithm ensures fair distribution.
+              </div>
             </div>
           )}
         </div>
@@ -621,12 +829,19 @@ export function CustomerDashboard() {
                       {job.problemDescription}
                     </p>
 
-                    {/* Assigned Worker Card */}
+                    {/* Assigned Worker Card + Live ETA */}
                     <div className="flex items-center justify-between text-xs bg-blue-50/60 p-2.5 rounded-lg border border-blue-100">
                       <div>
                         <div className="text-[10px] text-slate-400 font-semibold uppercase">Assigned Worker</div>
                         <div className="font-bold text-slate-900">{job.workerName}</div>
                       </div>
+                      {etaData[job.id] && ['ON_THE_WAY', 'ACCEPTED'].includes(job.status) && (
+                        <div className="text-center px-3">
+                          <div className="text-[10px] text-slate-400 font-semibold">ETA</div>
+                          <div className="text-lg font-bold text-blue-900 font-mono">{etaData[job.id].minutes}min</div>
+                          <div className="text-[9px] text-slate-400">{etaData[job.id].distanceKm}km away</div>
+                        </div>
+                      )}
                       <div className="flex items-center space-x-2">
                         <button
                           onClick={() => setContactModalJob(job)}
@@ -635,8 +850,30 @@ export function CustomerDashboard() {
                           <PhoneCall className="w-3 h-3" />
                           Contact
                         </button>
+                        {['ACCEPTED', 'ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS'].includes(job.status) && (
+                          <button
+                            onClick={() => { setSosModalJob(job); setSosMessage(''); }}
+                            className="px-2 py-1 bg-red-50 hover:bg-red-100 text-red-700 font-semibold rounded border border-red-200 text-[11px] flex items-center gap-1"
+                          >
+                            <ShieldAlert className="w-3 h-3" />
+                            SOS
+                          </button>
+                        )}
                       </div>
                     </div>
+
+                    {/* Live Progress Bar for ON_THE_WAY */}
+                    {job.status === 'ON_THE_WAY' && etaData[job.id] && (
+                      <div className="bg-blue-50 p-2 rounded-lg border border-blue-100">
+                        <div className="flex justify-between text-[10px] text-blue-800 mb-1">
+                          <span>Worker en route</span>
+                          <span>{etaData[job.id].minutes} min remaining</span>
+                        </div>
+                        <div className="w-full bg-blue-200 rounded-full h-1.5">
+                          <div className="bg-blue-700 h-1.5 rounded-full transition-all" style={{ width: `${Math.min(90, 100 - (etaData[job.id].minutes * 5))}%` }}></div>
+                        </div>
+                      </div>
+                    )}
 
                     {/* Verification OTP Display */}
                     {job.status !== 'COMPLETED' && job.status !== 'PAID' && job.status !== 'CANCELLED' && job.otp && (
@@ -652,9 +889,14 @@ export function CustomerDashboard() {
                     )}
 
                     {/* Action buttons based on status */}
-                    <div className="flex items-center justify-end space-x-2 pt-1">
+                    <div className="flex items-center justify-end space-x-2 pt-1 flex-wrap">
                       {['REQUESTED','MATCHING','OFFERED','ACCEPTED'].includes(job.status) && (
-                        <button onClick={() => handleCancelJob(job.id)} className="text-[11px] text-red-600 hover:text-red-800 underline">Cancel Booking</button>
+                        <>
+                          <button onClick={() => { setRescheduleJob(job); setRescheduleDate(job.scheduledDate || new Date().toISOString().split('T')[0]); setRescheduleTime(job.scheduledTime || 'Immediately'); }} className="text-[11px] text-blue-700 hover:text-blue-900 underline flex items-center gap-0.5">
+                            <RotateCcw className="w-3 h-3" /> Reschedule (2hr free)
+                          </button>
+                          <button onClick={() => handleCancelJob(job.id)} className="text-[11px] text-red-600 hover:text-red-800 underline">Cancel</button>
+                        </>
                       )}
                       {job.status === 'COMPLETED' && job.paymentStatus !== 'PAID' && (
                         <button
@@ -662,7 +904,7 @@ export function CustomerDashboard() {
                           className="bg-emerald-700 hover:bg-emerald-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm"
                         >
                           <CreditCard className="w-3.5 h-3.5" />
-                          {t('customer.payNow', 'Pay')} ₹{job.pricing?.grossAmount || 500}
+                          {job.packCreditUsed ? 'Free (Pack)' : `Pay ₹${job.pricing?.grossAmount || 500}`}
                         </button>
                       )}
 
@@ -673,6 +915,13 @@ export function CustomerDashboard() {
                         >
                           <Star className="w-3.5 h-3.5" />
                           {t('customer.rateWorker', 'Rate Service')}
+                        </button>
+                      )}
+
+                      {job.rating && job.rating.score <= 2 && !job.reService && (
+                        <button onClick={() => handleReService(job.id)} className="bg-blue-700 hover:bg-blue-800 text-white px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1 shadow-sm">
+                          <RotateCcw className="w-3.5 h-3.5" />
+                          Free Re-Service
                         </button>
                       )}
 
@@ -690,7 +939,7 @@ export function CustomerDashboard() {
                         onClick={() => setComplaintModalJob(job)}
                         className="text-[11px] text-red-600 hover:text-red-800 underline ml-2"
                       >
-                        Raise Complaint
+                        Complaint
                       </button>
                     </div>
                   </div>
@@ -941,6 +1190,72 @@ export function CustomerDashboard() {
         isOpen={!!selectedInvoiceJob}
         onClose={() => setSelectedInvoiceJob(null)}
       />
+
+      {/* MODAL 6: SOS Alert */}
+      {sosModalJob && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-red-300 w-full max-w-md p-6 space-y-4 animate-in zoom-in-95">
+            <h3 className="text-base font-bold text-red-700 flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5" />
+              SOS Emergency Alert
+            </h3>
+            <p className="text-xs text-slate-600">
+              This will immediately notify the <strong>Society Admin</strong> and <strong>Federation Admin</strong>. A field team will be dispatched.
+            </p>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Emergency Message (optional)</label>
+              <textarea
+                rows="2"
+                value={sosMessage}
+                onChange={(e) => setSosMessage(e.target.value)}
+                placeholder="Describe the emergency..."
+                className="w-full px-3 py-2 border border-red-300 rounded-lg text-xs"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button onClick={() => setSosModalJob(null)} className="px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
+              <button onClick={handleSos} className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                Send SOS Alert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 7: Reschedule */}
+      {rescheduleJob && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-slate-200 w-full max-w-md p-6 space-y-4 animate-in zoom-in-95">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <RotateCcw className="w-5 h-5 text-blue-700" />
+              Reschedule Job (Free within 2 hours)
+            </h3>
+            <p className="text-xs text-slate-500">
+              Current: {rescheduleJob.scheduledDate} {rescheduleJob.scheduledTime}
+            </p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">New Date</label>
+                <input type="date" value={rescheduleDate} onChange={(e) => setRescheduleDate(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs" />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">New Time Slot</label>
+                <select value={rescheduleTime} onChange={(e) => setRescheduleTime(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white">
+                  <option>Immediately</option>
+                  <option>Morning (9AM-12PM)</option>
+                  <option>Afternoon (12PM-4PM)</option>
+                  <option>Evening (4PM-8PM)</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button onClick={() => setRescheduleJob(null)} className="px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
+              <button onClick={handleReschedule} className="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-sm">Confirm Reschedule</button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

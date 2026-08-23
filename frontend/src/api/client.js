@@ -51,6 +51,12 @@ export const api = {
   cancelJob: (id, payload = {}) => request(`/jobs/${id}/cancel`, { method: 'POST', body: JSON.stringify(payload) }),
   declineJobOffer: (id, payload = {}) => request(`/jobs/${id}/decline`, { method: 'POST', body: JSON.stringify(payload) }),
   resendOtp: (id) => request(`/jobs/${id}/resend-otp`, { method: 'POST' }),
+  rescheduleJob: (id, payload) => request(`/jobs/${id}/reschedule`, { method: 'POST', body: JSON.stringify(payload) }),
+  requestReService: (id) => request(`/jobs/${id}/re-service`, { method: 'POST' }),
+  sendSosAlert: (id, payload) => request(`/jobs/${id}/sos`, { method: 'POST', body: JSON.stringify(payload) }),
+  getJobEta: (id) => request(`/jobs/${id}/eta`),
+  getPackCredits: () => request('/jobs/packs/credits'),
+  purchasePack: (payload = {}) => request('/jobs/packs/purchase', { method: 'POST', body: JSON.stringify(payload) }),
 
   // Allocation & Problem Classifier
   simulateAllocation: (params) => request('/allocation/simulate', { method: 'POST', body: JSON.stringify(params) }),

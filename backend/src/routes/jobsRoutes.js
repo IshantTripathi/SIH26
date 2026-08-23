@@ -8,7 +8,13 @@ import {
   getJobById,
   cancelJob,
   declineJobOffer,
-  resendOtp
+  resendOtp,
+  rescheduleJob,
+  requestReService,
+  sendSosAlert,
+  getJobEta,
+  getPackCredits,
+  purchasePack
 } from '../controllers/jobsController.js';
 import { authenticate } from '../middleware/authMiddleware.js';
 
@@ -23,5 +29,11 @@ router.post('/:id/rate', authenticate, submitRating);
 router.post('/:id/cancel', authenticate, cancelJob);
 router.post('/:id/decline', authenticate, declineJobOffer);
 router.post('/:id/resend-otp', authenticate, resendOtp);
+router.post('/:id/reschedule', authenticate, rescheduleJob);
+router.post('/:id/re-service', authenticate, requestReService);
+router.post('/:id/sos', authenticate, sendSosAlert);
+router.get('/:id/eta', authenticate, getJobEta);
+router.get('/packs/credits', authenticate, getPackCredits);
+router.post('/packs/purchase', authenticate, purchasePack);
 
 export default router;
