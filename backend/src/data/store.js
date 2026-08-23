@@ -29,6 +29,18 @@ class DataStore {
     this.auditLogs = JSON.parse(JSON.stringify(initialAuditLogs));
     this.welfareClaims = [];
     this.notifications = [];
+    this.dividendPool = { totalSurplus: 125000, distributionPeriod: 'Q3 2026', status: 'Pending Distribution' };
+    this.proposals = [
+      { id: 'PROP-001', title: 'Reduce Society Cut to 3% for Festival Season', description: 'Temporarily reduce coop contribution from 4% to 3% to boost worker Diwali earnings', proposedBy: 'Worker Demo 01', status: 'Active', votesFor: 7, votesAgainst: 1, totalEligible: 12, createdAt: new Date().toISOString(), category: 'Contribution Policy' },
+      { id: 'PROP-002', title: 'Add Solar Technician Trade', description: 'Add Solar PV Maintenance as new service category for green jobs', proposedBy: 'Federation Admin 01', status: 'Active', votesFor: 5, votesAgainst: 0, totalEligible: 12, createdAt: new Date().toISOString(), category: 'New Trade' }
+    ];
+    this.toolInventory = [
+      { id: 'TOOL-001', name: 'Rotary Hammer Drill', category: 'Electrical', totalUnits: 4, availableUnits: 3, depositAmount: 500, perDayFee: 20, societyId: 'SOC-DEMO-001', condition: 'Good', borrowedBy: [] },
+      { id: 'TOOL-002', name: 'Pressure Washer', category: 'Cleaning', totalUnits: 2, availableUnits: 2, depositAmount: 800, perDayFee: 30, societyId: 'SOC-DEMO-001', condition: 'Excellent', borrowedBy: [] },
+      { id: 'TOOL-003', name: 'Pipe Inspection Camera', category: 'Plumbing', totalUnits: 1, availableUnits: 1, depositAmount: 1000, perDayFee: 50, societyId: 'SOC-DEMO-001', condition: 'Good', borrowedBy: [] },
+      { id: 'TOOL-004', name: 'Ladder 12ft Aluminium', category: 'General', totalUnits: 3, availableUnits: 2, depositAmount: 300, perDayFee: 15, societyId: 'SOC-DEMO-002', condition: 'Good', borrowedBy: [] }
+    ];
+    this.toolLoans = [];
   }
 
   // Generic collection accessor

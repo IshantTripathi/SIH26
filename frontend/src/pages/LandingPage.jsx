@@ -118,6 +118,11 @@ export function LandingPage({ onOpenDemoScenarios }) {
                 placeholder='e.g., "I have a leaking kitchen tap" or "Ceiling fan makes strange noise"'
                 className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
               />
+              <button type="button" onClick={()=>{
+                const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+                if(!SR) return alert('Voice not supported');
+                const r=new SR(); r.lang='hi-IN'; r.onresult=e=>setProblemQuery(e.results[0][0].transcript); r.start();
+              }} className="px-3 py-2.5 bg-amber-100 border border-amber-300 rounded-lg text-xs" title="Speak in Hindi/English">🎙️</button>
               <button
                 type="submit"
                 disabled={isSearching}

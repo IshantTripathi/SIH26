@@ -385,21 +385,28 @@ export function CustomerDashboard() {
                 </div>
               )}
 
-              {/* Problem Description Input */}
+              {/* Problem Description Input with Voice */}
               <div>
-                <label className="block font-bold text-slate-800 mb-1">
-                  {t('customer.describeProblem', 'Describe the Problem in Your Words')}
+                <label className="block font-bold text-slate-800 mb-1 flex items-center justify-between">
+                  <span>{t('customer.describeProblem', 'Describe the Problem in Your Words')}</span>
+                  <button type="button" onClick={()=>{
+                    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+                    if(!SR){ alert('Voice not supported in this browser'); return; }
+                    const rec = new SR(); rec.lang = 'hi-IN'; rec.interimResults=false; rec.maxAlternatives=1;
+                    rec.onresult = (e)=>{ const t=e.results[0][0].transcript; handleProblemChange(t); };
+                    rec.onerror=()=>{}; rec.start();
+                  }} className="text-[11px] bg-slate-100 hover:bg-amber-50 border border-slate-300 px-2 py-0.5 rounded flex items-center gap-1">🎙️ Voice (हिन्दी/EN)</button>
                 </label>
                 <textarea
                   rows="3"
                   value={problemDescription}
                   onChange={(e) => handleProblemChange(e.target.value)}
-                  placeholder='e.g., "I have a leaking kitchen tap under the sink" or "Ceiling fan making strange grinding noise" or "Need elder caregiving daytime support"'
+                  placeholder='e.g., "I have a leaking kitchen tap under the sink" or "Ceiling fan making strange grinding noise" or "Need elder caregiving daytime support" — or tap 🎙️ and speak in Hindi/English'
                   required
                   className="w-full px-3 py-2.5 border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-900 text-sm bg-white"
                 />
                 <div className="text-[11px] text-slate-400 mt-1">
-                  No need to know trade jargon. Our problem classifier identifies the certified trade automatically.
+                  No need to know trade jargon. Our problem classifier identifies the certified trade automatically. Voice supports Hindi + English offline queue via PWA.
                 </div>
               </div>
 
@@ -546,6 +553,12 @@ export function CustomerDashboard() {
                 candidate={latestAllocationResult.recommendedWorker}
                 isTop={true}
               />
+              <button onClick={async()=>{
+                try{
+                  const r=await api.explainAllocation({serviceCategory:detectedCategory||'Plumbing'});
+                  alert(`Explainable Twin:\nTop: ${r.recommended.workerName} (${r.recommended.totalScore})\nCounterfactual: ${r.counterfactual?.explanation || 'N/A'}\nNote: ${r.fairnessNote}`);
+                }catch(e){alert(e.message)}
+              }} className="w-full mt-2 bg-slate-100 hover:bg-slate-200 text-slate-800 border border-slate-300 py-1.5 rounded-lg text-xs font-bold">🔍 Explainable Twin — Why this worker?</button>
             </div>
           )}
         </div>

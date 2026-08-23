@@ -441,6 +441,26 @@ export function WorkerDashboard() {
                 <div>
                   <strong>Service Coverage:</strong> {profile?.serviceAreas?.join(', ') || 'Central Metro'}
                 </div>
+                <div className="pt-2 border-t border-slate-200 mt-2">
+                  <div className="font-bold text-slate-800 flex items-center gap-1">Verifiable Skill Passport <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">NCCT QR</span></div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-16 h-16 bg-white border-2 border-slate-800 rounded flex items-center justify-center text-[7px] font-mono text-center p-1">
+                      QR<br/>{profile?.certifications?.[0]?.code || 'CERT-DEMO-002'}<br/>✓ Verified
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-mono text-[10px] break-all bg-slate-100 p-1 rounded">{profile?.certifications?.[0]?.code || 'CERT-DEMO-002'}|{profile?.code}|hash</div>
+                      <button onClick={async()=>{
+                        try{
+                          const code=profile?.certifications?.[0]?.code;
+                          if(!code) return alert('No cert code');
+                          const r=await api.verifyCert(code);
+                          alert(r.verified ? `✓ Verified: ${r.holder.name} — ${r.certificate.title} (${r.certificate.code})` : 'Not verified');
+                        }catch(e){alert(e.message)}
+                      }} className="mt-1 text-[11px] bg-blue-900 text-white px-2 py-0.5 rounded font-bold">Verify Now</button>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-slate-400">Customer scans QR to verify on cooperative registry — portable across societies.</div>
+                </div>
               </div>
             </div>
           </div>

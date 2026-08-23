@@ -56,6 +56,8 @@ export const api = {
   simulateAllocation: (params) => request('/allocation/simulate', { method: 'POST', body: JSON.stringify(params) }),
   classifyIntent: (problemText) => request('/allocation/classify-intent', { method: 'POST', body: JSON.stringify({ problemText }) }),
   getFivePlumberScenario: () => request('/allocation/five-plumber-scenario'),
+  explainAllocation: (payload) => request('/allocation/explain', { method: 'POST', body: JSON.stringify(payload) }),
+  verifyCert: (code) => request(`/allocation/verify-cert/${code}`),
 
   // Worker
   getWorkerProfile: (id) => request(id ? `/worker/profile/${id}` : '/worker/profile'),
@@ -74,6 +76,14 @@ export const api = {
     const query = new URLSearchParams(params).toString();
     return request(`/federation/notifications${query ? `?${query}` : ''}`);
   },
+  getDividendPool: () => request('/federation/dividend'),
+  distributeDividend: () => request('/federation/dividend/distribute', { method: 'POST' }),
+  getProposals: () => request('/federation/proposals'),
+  createProposal: (payload) => request('/federation/proposals', { method: 'POST', body: JSON.stringify(payload) }),
+  voteProposal: (id, vote) => request(`/federation/proposals/${id}/vote`, { method: 'POST', body: JSON.stringify({ vote }) }),
+  getToolInventory: () => request('/federation/tools'),
+  borrowTool: (payload) => request('/federation/tools/borrow', { method: 'POST', body: JSON.stringify(payload) }),
+  returnTool: (id) => request(`/federation/tools/return/${id}`, { method: 'POST' }),
 
   // Analytics & Demand Forecasting
   getDemandAnalytics: (params = {}) => {
