@@ -235,5 +235,20 @@ export const api = {
   // Innovation 8: AR Repair Guidance
   getRepairGuide: (category, issueType) => request(`/ar-guidance/guide/${encodeURIComponent(category)}${issueType ? `/${encodeURIComponent(issueType)}` : ''}`),
   getAllRepairGuides: () => request('/ar-guidance/guides'),
-  getToolRecommendations: (category) => request(`/ar-guidance/tools/${encodeURIComponent(category)}`)
+  getToolRecommendations: (category) => request(`/ar-guidance/tools/${encodeURIComponent(category)}`),
+
+  // Urban Company Style: Subscription Packs & Instant Booking
+  getSubscriptionPacks: (serviceCategory) => request(`/subscription/packs/${encodeURIComponent(serviceCategory)}`),
+  purchaseSubscriptionPack: (payload) => request('/subscription/purchase', { method: 'POST', body: JSON.stringify(payload) }),
+  getCustomerSubscriptions: (customerId) => request(`/subscription/customer/${customerId}`),
+  useSubscriptionSession: (subscriptionId) => request('/subscription/use-session', { method: 'POST', body: JSON.stringify({ subscriptionId }) }),
+  getInstantBookingEligibility: (serviceCategory) => request(`/subscription/instant-booking/eligibility/${encodeURIComponent(serviceCategory)}`),
+  createInstantBooking: (payload) => request('/subscription/instant-booking/create', { method: 'POST', body: JSON.stringify(payload) }),
+  respondToInstantBooking: (payload) => request('/subscription/instant-booking/respond', { method: 'POST', body: JSON.stringify(payload) }),
+  getInstantBookingStatus: (bookingId) => request(`/subscription/instant-booking/${bookingId}`),
+
+  // New Service Categories
+  getBeautySpaServices: () => request('/system/services?category=Beauty & Spa'),
+  getManicurePedicureServices: () => request('/system/services?category=Manicure & Pedicure'),
+  getHousehelpServices: () => request('/system/services?category=Househelp')
 };

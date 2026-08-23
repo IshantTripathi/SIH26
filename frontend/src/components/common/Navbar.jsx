@@ -184,6 +184,36 @@ export function Navbar({ onOpenDemoScenarios }) {
                     >
                       <Globe className="w-3.5 h-3.5" /> Impact
                     </Link>
+                    <Link
+                      to="/customer/househelp"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/househelp'
+                          ? 'bg-green-50 text-green-900 font-semibold'
+                          : 'text-slate-700 hover:text-green-900 hover:bg-green-50'
+                      }`}
+                    >
+                      🏠 Househelp
+                    </Link>
+                    <Link
+                      to="/customer/beauty-spa"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/beauty-spa'
+                          ? 'bg-pink-50 text-pink-900 font-semibold'
+                          : 'text-slate-700 hover:text-pink-900 hover:bg-pink-50'
+                      }`}
+                    >
+                      💆 Beauty & Spa
+                    </Link>
+                    <Link
+                      to="/customer/manicure-pedicure"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/manicure-pedicure'
+                          ? 'bg-purple-50 text-purple-900 font-semibold'
+                          : 'text-slate-700 hover:text-purple-900 hover:bg-purple-50'
+                      }`}
+                    >
+                      💅 Nails
+                    </Link>
                   </>
                 )}
 

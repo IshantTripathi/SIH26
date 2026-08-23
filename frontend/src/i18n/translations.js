@@ -144,7 +144,17 @@ export const translations = {
     'scheduling.title': 'Smart Scheduling',
     'scheduling.subtitle': 'Weather & festival-aware booking suggestions',
     'ar.title': 'AR Repair Guidance',
-    'ar.subtitle': 'Step-by-step visual repair guides for workers'
+    'ar.subtitle': 'Step-by-step visual repair guides for workers',
+    'househelp.title': 'Instant Househelp',
+    'househelp.subtitle': 'Get verified househelp within 30 minutes',
+    'beauty.title': 'Beauty & Spa Services',
+    'beauty.subtitle': 'Professional beauty treatments at home',
+    'nails.title': 'Professional Manicure & Pedicure',
+    'nails.subtitle': 'Nail care, cuticle treatment, and nail art',
+    'subscription.title': 'Subscription Packs',
+    'subscription.subtitle': 'Save up to 25% on regular services',
+    'instant.title': 'Instant Booking',
+    'instant.subtitle': 'Get service within 30 minutes'
   },
   hi: {
     // Navigation & Common
@@ -291,6 +301,16 @@ export const translations = {
     'scheduling.title': 'स्मार्ट शेड्यूलिंग',
     'scheduling.subtitle': 'मौसम और त्योहार-जागरूक बुकिंग सुझाव',
     'ar.title': 'एआर मरम्मत मार्गदर्शन',
-    'ar.subtitle': 'श्रमिकों के लिए चरण-दर-चरण दृश्य मरम्मत मार्गदर्शिकाएँ'
+    'ar.subtitle': 'श्रमिकों के लिए चरण-दर-चरण दृश्य मरम्मत मार्गदर्शिकाएँ',
+    'househelp.title': 'तत्काल घरेलू सहायता',
+    'househelp.subtitle': '30 मिनट में सत्यापित घरेलू सहायता प्राप्त करें',
+    'beauty.title': 'सौंदर्य और स्पा सेवाएं',
+    'beauty.subtitle': '�र पर पेशेवर सौंदर्य उपचार',
+    'nails.title': 'पेशेवर मैनीक्योर और पेडीक्योर',
+    'nails.subtitle': 'नेल केयर, क्यूटिकल ट्रीटमेंट और नेल आर्ट',
+    'subscription.title': 'सदस्यता पैक',
+    'subscription.subtitle': 'नियमित सेवाओं पर 25% तक बचाएं',
+    'instant.title': 'तत्काल बुकिंग',
+    'instant.subtitle': '30 मिनट के भीतर सेवा प्राप्त करें'
   }
 };

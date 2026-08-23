@@ -30,8 +30,8 @@ export const initialSocieties = [
     welfareFundPercent: 1.0,      // Configurable
     workerPayoutPercent: 95.0,    // Configurable
     officialEmail: 'society01.admin@demo.coop',
-    totalWorkers: 8,
-    activeJobsCount: 4,
+    totalWorkers: 12,
+    activeJobsCount: 6,
     status: 'Active (Demo)',
     createdAt: '2025-01-10T00:00:00.000Z'
   },
@@ -48,8 +48,8 @@ export const initialSocieties = [
     welfareFundPercent: 1.0,
     workerPayoutPercent: 95.0,
     officialEmail: 'society02.admin@demo.coop',
-    totalWorkers: 4,
-    activeJobsCount: 2,
+    totalWorkers: 6,
+    activeJobsCount: 3,
     status: 'Active (Demo)',
     createdAt: '2025-02-01T00:00:00.000Z'
   }
@@ -216,6 +216,67 @@ export const initialUsers = [
     password: 'password123',
     workerId: 'WORKER-DEMO-005',
     createdAt: '2025-01-12T00:00:00.000Z'
+  },
+  // NEW URBAN COMPANY STYLE WORKERS - Househelp, Beauty/Spa, Manicure/Pedicure
+  {
+    id: 'USR-WRK-010',
+    name: 'Ritu Sharma (Househelp Specialist)',
+    email: 'worker10@demo.coop',
+    mobile: '9876510010',
+    role: ROLES.WORKER,
+    password: 'password123',
+    workerId: 'WORKER-DEMO-010',
+    createdAt: '2025-06-01T00:00:00.000Z'
+  },
+  {
+    id: 'USR-WRK-011',
+    name: 'Priya Verma (Househelp)',
+    email: 'worker11@demo.coop',
+    mobile: '9876510011',
+    role: ROLES.WORKER,
+    password: 'password123',
+    workerId: 'WORKER-DEMO-011',
+    createdAt: '2025-06-01T00:00:00.000Z'
+  },
+  {
+    id: 'USR-WRK-012',
+    name: 'Anita Kumari (Beauty Expert)',
+    email: 'worker12@demo.coop',
+    mobile: '9876510012',
+    role: ROLES.WORKER,
+    password: 'password123',
+    workerId: 'WORKER-DEMO-012',
+    createdAt: '2025-06-01T00:00:00.000Z'
+  },
+  {
+    id: 'USR-WRK-013',
+    name: 'Sunita Devi (Spa Therapist)',
+    email: 'worker13@demo.coop',
+    mobile: '9876510013',
+    role: ROLES.WORKER,
+    password: 'password123',
+    workerId: 'WORKER-DEMO-013',
+    createdAt: '2025-06-01T00:00:00.000Z'
+  },
+  {
+    id: 'USR-WRK-014',
+    name: 'Kavita Joshi (Nail Artist)',
+    email: 'worker14@demo.coop',
+    mobile: '9876510014',
+    role: ROLES.WORKER,
+    password: 'password123',
+    workerId: 'WORKER-DEMO-014',
+    createdAt: '2025-06-01T00:00:00.000Z'
+  },
+  {
+    id: 'USR-WRK-015',
+    name: 'Deepa Nair (Househelp)',
+    email: 'worker15@demo.coop',
+    mobile: '9876510015',
+    role: ROLES.WORKER,
+    password: 'password123',
+    workerId: 'WORKER-DEMO-015',
+    createdAt: '2025-06-01T00:00:00.000Z'
   }
 ];
 
@@ -329,6 +390,65 @@ export const initialServices = [
     estimatedDurationMin: 60,
     requiredCertifications: ['CERT-DEMO-MAINT'],
     keywords: ['handyman', 'drill', 'curtain', 'fixture', 'mounting', 'repair', 'maintenance', 'fix', 'general']
+  },
+  {
+    id: 'SERV-HOUSEHELP',
+    category: 'Househelp',
+    title: 'Instant Househelp & Domestic Help',
+    description: 'Cooking, cleaning, dishwashing, laundry, grocery shopping, and daily household chores. Instant booking available within 30 minutes.',
+    basePrice: 350,
+    priceUnit: 'per hour',
+    estimatedDurationMin: 120,
+    requiredCertifications: ['CERT-DEMO-HOUSE'],
+    keywords: ['househelp', 'maid', 'cooking', 'cleaning', 'dishes', 'laundry', 'grocery', 'domestic', 'help', 'kitchen', 'utensil', 'sweep', 'mop', 'iron'],
+    instantBookingAvailable: true,
+    subscriptionPacks: [
+      { id: 'PACK-WEEKLY-12H', name: 'Weekly Basic', hoursPerWeek: 12, price: 3500, pricePerHour: 292, description: '12 hours/week for basic household chores' },
+      { id: 'PACK-WEEKLY-24H', name: 'Weekly Premium', hoursPerWeek: 24, price: 6000, pricePerHour: 250, description: '24 hours/week including cooking and deep cleaning' },
+      { id: 'PACK-MONTHLY-48H', name: 'Monthly Basic', hoursPerMonth: 48, price: 12000, pricePerHour: 250, description: '48 hours/month for regular household maintenance' },
+      { id: 'PACK-MONTHLY-96H', name: 'Monthly Premium', hoursPerMonth: 96, price: 21000, pricePerHour: 219, description: '96 hours/month full household management' }
+    ],
+    recurringBookingOptions: ['Daily', 'Alternate Days', 'Weekly', 'Monthly']
+  },
+  {
+    id: 'SERV-BEAUTY-SPA',
+    category: 'Beauty & Spa',
+    title: 'Beauty Treatment & Spa Services',
+    description: 'Professional beauty treatments, facial, body massage, hair spa, skin care, and relaxation therapies at home.',
+    basePrice: 800,
+    priceUnit: 'per session',
+    estimatedDurationMin: 90,
+    requiredCertifications: ['CERT-DEMO-BEAUTY'],
+    keywords: ['beauty', 'spa', 'facial', 'massage', 'hair', 'skin', 'relaxation', 'body', 'therapy', 'aroma', 'hot stone', 'head massage'],
+    subServices: [
+      { id: 'SUB-FACIAL', name: 'Facial Treatment', price: 800, duration: 60 },
+      { id: 'SUB-BODY-MASSAGE', name: 'Body Massage', price: 1200, duration: 90 },
+      { id: 'SUB-HAIR-SPA', name: 'Hair Spa Treatment', price: 600, duration: 45 },
+      { id: 'SUB-AROMA', name: 'Aromatherapy Session', price: 1500, duration: 90 },
+      { id: 'SUB-HOT-STONE', name: 'Hot Stone Massage', price: 1800, duration: 90 },
+      { id: 'SUB-HEAD-MASSAGE', name: 'Head Massage', price: 400, duration: 30 }
+    ]
+  },
+  {
+    id: 'SERV-MANICURE-PEDICURE',
+    category: 'Manicure & Pedicure',
+    title: 'Professional Manicure & Pedicure',
+    description: 'Nail care, cuticle treatment, nail art, gel polish, foot spa, and paraffin wax treatment at home.',
+    basePrice: 500,
+    priceUnit: 'per session',
+    estimatedDurationMin: 60,
+    requiredCertifications: ['CERT-DEMO-NAILS'],
+    keywords: ['manicure', 'pedicure', 'nail', 'cuticle', 'polish', 'gel', 'nail art', 'foot spa', 'paraffin', 'hand care', 'foot care'],
+    subServices: [
+      { id: 'SUB-BASIC-MANICURE', name: 'Basic Manicure', price: 350, duration: 30 },
+      { id: 'SUB-BASIC-PEDICURE', name: 'Basic Pedicure', price: 400, duration: 35 },
+      { id: 'SUB-GEL-MANICURE', name: 'Gel Manicure', price: 600, duration: 45 },
+      { id: 'SUB-GEL-PEDICURE', name: 'Gel Pedicure', price: 700, duration: 50 },
+      { id: 'SUB-NAIL-ART', name: 'Nail Art Design', price: 300, duration: 30 },
+      { id: 'SUB-FULL-SET', name: 'Full Manicure + Pedicure', price: 800, duration: 75 },
+      { id: 'SUB-PARAFFIN', name: 'Paraffin Wax Treatment', price: 500, duration: 30 },
+      { id: 'SUB-FOOT-SPA', name: 'Foot Spa & Massage', price: 450, duration: 40 }
+    ]
   }
 ];
 
@@ -827,6 +947,226 @@ export const initialJobs = [
     scheduledTime: '09:00 AM',
     allocationReason: 'Matched: Certified Caregiver, high reliability score (99%), optimal availability.',
     createdAt: '2026-08-22T08:00:00.000Z'
+  }
+];
+
+  // === NEW URBAN COMPANY STYLE SERVICES - Househelp, Beauty/Spa, Manicure/Pedicure ===
+  {
+    id: 'WORKER-DEMO-010',
+    userId: 'USR-WRK-010',
+    code: 'WORKER-DEMO-010',
+    name: 'Ritu Sharma (Househelp Specialist)',
+    societyId: 'SOC-DEMO-001',
+    serviceCategories: ['Househelp', 'Cleaning'],
+    primarySkill: 'Househelp',
+    secondarySkills: ['Cooking', 'Deep Cleaning', 'Laundry'],
+    experienceYears: 5,
+    certifications: [
+      {
+        code: 'CERT-DEMO-HOUSE-001',
+        title: 'Certified Domestic Help Professional',
+        issuedBy: 'Cooperative Skill Verification Board',
+        issuedDate: '2024-06-15',
+        verified: true
+      }
+    ],
+    verificationStatus: VERIFICATION_STATUS.VERIFIED,
+    isOnline: true,
+    currentWorkload: WORKLOAD_STATUS.BALANCED,
+    activeJobsCount: 1,
+    recentCompletedJobs: 15,
+    ratingAvg: 4.92,
+    ratingCount: 45,
+    totalEarningsGross: 28500,
+    location: { lat: 28.6180, lng: 77.2200, area: 'Karol Bagh' },
+    distanceToCustomerKm: 2.1,
+    welfareId: 'WELFARE-DEMO-010',
+    insuranceId: 'INS-DEMO-010',
+    serviceAreas: ['Karol Bagh', 'Rajouri Garden', 'Patel Nagar'],
+    reliabilityScore: 96,
+    instantBookingEligible: true,
+    maxInstantResponseMin: 25
+  },
+  {
+    id: 'WORKER-DEMO-011',
+    userId: 'USR-WRK-011',
+    code: 'WORKER-DEMO-011',
+    name: 'Priya Verma (Househelp)',
+    societyId: 'SOC-DEMO-001',
+    serviceCategories: ['Househelp', 'Cooking'],
+    primarySkill: 'Househelp',
+    secondarySkills: ['North Indian Cooking', 'South Indian Cooking', 'Baking'],
+    experienceYears: 7,
+    certifications: [
+      {
+        code: 'CERT-DEMO-HOUSE-002',
+        title: 'Certified Culinary & Household Professional',
+        issuedBy: 'Cooperative Skill Verification Board',
+        issuedDate: '2023-11-20',
+        verified: true
+      }
+    ],
+    verificationStatus: VERIFICATION_STATUS.VERIFIED,
+    isOnline: true,
+    currentWorkload: WORKLOAD_STATUS.LIGHT_WORKLOAD,
+    activeJobsCount: 0,
+    recentCompletedJobs: 22,
+    ratingAvg: 4.95,
+    ratingCount: 60,
+    totalEarningsGross: 35000,
+    location: { lat: 28.6220, lng: 77.2180, area: 'Lajpat Nagar' },
+    distanceToCustomerKm: 3.5,
+    welfareId: 'WELFARE-DEMO-011',
+    insuranceId: 'INS-DEMO-011',
+    serviceAreas: ['Lajpat Nagar', 'South Extension', 'Nehru Place'],
+    reliabilityScore: 98,
+    instantBookingEligible: true,
+    maxInstantResponseMin: 20
+  },
+  {
+    id: 'WORKER-DEMO-012',
+    userId: 'USR-WRK-012',
+    code: 'WORKER-DEMO-012',
+    name: 'Anita Kumari (Beauty Expert)',
+    societyId: 'SOC-DEMO-001',
+    serviceCategories: ['Beauty & Spa', 'Manicure & Pedicure'],
+    primarySkill: 'Beauty & Spa',
+    secondarySkills: ['Facial', 'Body Massage', 'Manicure', 'Pedicure', 'Nail Art'],
+    experienceYears: 6,
+    certifications: [
+      {
+        code: 'CERT-DEMO-BEAUTY-001',
+        title: 'Certified Beauty & Wellness Professional',
+        issuedBy: 'Cooperative Skill Verification Board',
+        issuedDate: '2024-01-10',
+        verified: true
+      },
+      {
+        code: 'CERT-DEMO-NAILS-001',
+        title: 'Advanced Nail Art & Care Certificate',
+        issuedBy: 'Cooperative Skill Verification Board',
+        issuedDate: '2024-04-20',
+        verified: true
+      }
+    ],
+    verificationStatus: VERIFICATION_STATUS.VERIFIED,
+    isOnline: true,
+    currentWorkload: WORKLOAD_STATUS.BALANCED,
+    activeJobsCount: 2,
+    recentCompletedJobs: 18,
+    ratingAvg: 4.88,
+    ratingCount: 52,
+    totalEarningsGross: 42000,
+    location: { lat: 28.6150, lng: 77.2100, area: 'Defence Colony' },
+    distanceToCustomerKm: 2.8,
+    welfareId: 'WELFARE-DEMO-012',
+    insuranceId: 'INS-DEMO-012',
+    serviceAreas: ['Defence Colony', 'Greater Kailash', 'Saket'],
+    reliabilityScore: 95
+  },
+  {
+    id: 'WORKER-DEMO-013',
+    userId: 'USR-WRK-013',
+    code: 'WORKER-DEMO-013',
+    name: 'Sunita Devi (Spa Therapist)',
+    societyId: 'SOC-DEMO-002',
+    serviceCategories: ['Beauty & Spa'],
+    primarySkill: 'Beauty & Spa',
+    secondarySkills: ['Aromatherapy', 'Hot Stone Massage', 'Body Scrub', 'Relaxation Therapy'],
+    experienceYears: 8,
+    certifications: [
+      {
+        code: 'CERT-DEMO-BEAUTY-002',
+        title: 'Certified Spa & Wellness Therapist',
+        issuedBy: 'Cooperative Skill Verification Board',
+        issuedDate: '2023-09-05',
+        verified: true
+      }
+    ],
+    verificationStatus: VERIFICATION_STATUS.VERIFIED,
+    isOnline: true,
+    currentWorkload: WORKLOAD_STATUS.LIGHT_WORKLOAD,
+    activeJobsCount: 0,
+    recentCompletedJobs: 30,
+    ratingAvg: 4.93,
+    ratingCount: 70,
+    totalEarningsGross: 56000,
+    location: { lat: 28.6300, lng: 77.2900, area: 'Mayur Vihar Phase 2' },
+    distanceToCustomerKm: 4.2,
+    welfareId: 'WELFARE-DEMO-013',
+    insuranceId: 'INS-DEMO-013',
+    serviceAreas: ['Mayur Vihar', 'Trilokpuri', 'Kondli'],
+    reliabilityScore: 97
+  },
+  {
+    id: 'WORKER-DEMO-014',
+    userId: 'USR-WRK-014',
+    code: 'WORKER-DEMO-014',
+    name: 'Kavita Joshi (Nail Artist)',
+    societyId: 'SOC-DEMO-001',
+    serviceCategories: ['Manicure & Pedicure'],
+    primarySkill: 'Manicure & Pedicure',
+    secondarySkills: ['Gel Nails', 'Nail Art', 'Paraffin Treatment', 'Foot Spa'],
+    experienceYears: 4,
+    certifications: [
+      {
+        code: 'CERT-DEMO-NAILS-002',
+        title: 'Professional Nail Art & Care Specialist',
+        issuedBy: 'Cooperative Skill Verification Board',
+        issuedDate: '2024-07-12',
+        verified: true
+      }
+    ],
+    verificationStatus: VERIFICATION_STATUS.VERIFIED,
+    isOnline: true,
+    currentWorkload: WORKLOAD_STATUS.BALANCED,
+    activeJobsCount: 1,
+    recentCompletedJobs: 12,
+    ratingAvg: 4.85,
+    ratingCount: 35,
+    totalEarningsGross: 22000,
+    location: { lat: 28.6170, lng: 77.2130, area: 'Connaught Place' },
+    distanceToCustomerKm: 0.8,
+    welfareId: 'WELFARE-DEMO-014',
+    insuranceId: 'INS-DEMO-014',
+    serviceAreas: ['Connaught Place', 'Janpath', 'Barakhamba'],
+    reliabilityScore: 93
+  },
+  {
+    id: 'WORKER-DEMO-015',
+    userId: 'USR-WRK-015',
+    code: 'WORKER-DEMO-015',
+    name: 'Deepa Nair (Househelp)',
+    societyId: 'SOC-DEMO-002',
+    serviceCategories: ['Househelp', 'Cleaning'],
+    primarySkill: 'Househelp',
+    secondarySkills: ['Deep Cleaning', 'Kitchen Maintenance', 'Bathroom Sanitization'],
+    experienceYears: 3,
+    certifications: [
+      {
+        code: 'CERT-DEMO-HOUSE-003',
+        title: 'Certified Professional Cleaner',
+        issuedBy: 'Cooperative Skill Verification Board',
+        issuedDate: '2025-02-01',
+        verified: true
+      }
+    ],
+    verificationStatus: VERIFICATION_STATUS.VERIFIED,
+    isOnline: true,
+    currentWorkload: WORKLOAD_STATUS.LIGHT_WORKLOAD,
+    activeJobsCount: 0,
+    recentCompletedJobs: 8,
+    ratingAvg: 4.80,
+    ratingCount: 18,
+    totalEarningsGross: 14000,
+    location: { lat: 28.6260, lng: 77.2980, area: 'Preet Vihar' },
+    distanceToCustomerKm: 5.0,
+    welfareId: 'WELFARE-DEMO-015',
+    insuranceId: 'INS-DEMO-015',
+    serviceAreas: ['Preet Vihar', 'Vasundhara Enclave', 'New Ashok Nagar'],
+    reliabilityScore: 91,
+    instantBookingEligible: true,
+    maxInstantResponseMin: 30
   }
 ];
 

@@ -27,6 +27,9 @@ import { FederationDashboard } from './pages/federation/FederationDashboard';
 import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
 import { VoiceBookingPage } from './pages/customer/VoiceBookingPage';
 import { CommunityImpactPage } from './pages/CommunityImpactPage';
+import { HousehelpPage } from './pages/customer/HousehelpPage';
+import { BeautySpaPage } from './pages/customer/BeautySpaPage';
+import { ManicurePedicurePage } from './pages/customer/ManicurePedicurePage';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -57,6 +60,9 @@ export function App() {
           <Route path="/customer" element={<CustomerDashboard />} />
           <Route path="/customer/bookings" element={<BookingHistoryPage />} />
           <Route path="/customer/voice-book" element={<VoiceBookingPage />} />
+          <Route path="/customer/househelp" element={<HousehelpPage />} />
+          <Route path="/customer/beauty-spa" element={<BeautySpaPage />} />
+          <Route path="/customer/manicure-pedicure" element={<ManicurePedicurePage />} />
 
           {/* Worker Routes */}
           <Route path="/worker" element={<WorkerDashboard />} />
