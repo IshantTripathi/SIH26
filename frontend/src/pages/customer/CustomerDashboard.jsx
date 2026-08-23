@@ -648,6 +648,52 @@ export function CustomerDashboard() {
                 </div>
               </div>
 
+              {/* Quick Select Common Issues */}
+              <div>
+                <label className="block font-bold text-slate-800 mb-2">
+                  ⚡ Quick Select - Common Issues
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  {[
+                    { icon: '🔧', label: 'Tap/Leak', category: 'Plumbing', desc: 'Leaking tap, pipe burst' },
+                    { icon: '💡', label: 'Electrical', category: 'Electrical', desc: 'Fan, light, switch' },
+                    { icon: '🪑', label: 'Furniture', category: 'Carpentry', desc: 'Door, window, table' },
+                    { icon: '🧹', label: 'Cleaning', category: 'Cleaning', desc: 'Deep clean, kitchen' },
+                    { icon: '🎨', label: 'Painting', category: 'Painting', desc: 'Wall paint, touchup' },
+                    { icon: '🌿', label: 'Gardening', category: 'Gardening', desc: 'Lawn, plants, pruning' },
+                    { icon: '🏠', label: 'Househelp', category: 'Househelp', desc: 'Cooking, dishes, laundry' },
+                    { icon: '💆', label: 'Beauty/Spa', category: 'Beauty & Spa', desc: 'Facial, massage, spa' },
+                    { icon: '💅', label: 'Manicure', category: 'Manicure & Pedicure', desc: 'Nails, pedicure, art' },
+                    { icon: '🧊', label: 'Appliance', category: 'Appliance Repair', desc: 'Fridge, AC, washing' },
+                    { icon: '🚗', label: 'Driver', category: 'Driving', desc: 'Chauffeur, drop' },
+                    { icon: '👴', label: 'Caregiving', category: 'Caregiving', desc: 'Elder, patient care' }
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setDetectedCategory(item.category);
+                        setProblemDescription(item.desc);
+                        setIntentData({
+                          serviceCategory: item.category,
+                          serviceTitle: item.label,
+                          basePrice: 500,
+                          confidence: 1.0
+                        });
+                      }}
+                      className={`flex flex-col items-center p-2 rounded-xl border-2 transition-all hover:scale-105 ${
+                        detectedCategory === item.category
+                          ? 'border-blue-500 bg-blue-50 shadow-md'
+                          : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      <span className="text-2xl mb-1">{item.icon}</span>
+                      <span className="text-[10px] font-bold text-slate-700 text-center leading-tight">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Automatic Classifier Feedback */}
               {intentData && (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between animate-in fade-in">
