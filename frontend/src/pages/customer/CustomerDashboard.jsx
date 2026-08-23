@@ -24,7 +24,14 @@ import {
   Timer,
   RotateCcw,
   ShieldAlert,
-  Package
+  Package,
+  Tag,
+  Headphones,
+  Sun,
+  CloudRain,
+  Snowflake,
+  Award,
+  Phone
 } from 'lucide-react';
 import { AllocationBreakdown } from '../../components/allocation/AllocationBreakdown';
 import { InvoiceModal } from '../../components/common/InvoiceModal';
@@ -106,9 +113,23 @@ export function CustomerDashboard() {
   const [sosModalJob, setSosModalJob] = useState(null);
   const [sosMessage, setSosMessage] = useState('');
 
+  // New: Loyalty, Coupons, Warranty, Callback, Seasonal
+  const [loyalty, setLoyalty] = useState(null);
+  const [couponCode, setCouponCode] = useState('');
+  const [couponResult, setCouponResult] = useState(null);
+  const [warranties, setWarranties] = useState([]);
+  const [callbackTime, setCallbackTime] = useState('');
+  const [callbackReason, setCallbackReason] = useState('');
+  const [callbackModal, setCallbackModal] = useState(false);
+  const [seasonalSuggestions, setSeasonalSuggestions] = useState([]);
+  const [warrantyModalJob, setWarrantyModalJob] = useState(null);
+
   useEffect(() => {
     fetchActiveJobs();
     fetchPackCredits();
+    fetchLoyaltyStatus();
+    fetchWarranties();
+    fetchSeasonalSuggestions();
     const interval = setInterval(fetchActiveJobs, 4000);
     return () => clearInterval(interval);
   }, []);
@@ -143,6 +164,27 @@ export function CustomerDashboard() {
         setPackInfo(res);
         if (res.creditsRemaining > 0) setUsePackCredit(true);
       }
+    } catch (err) {}
+  };
+
+  const fetchLoyaltyStatus = async () => {
+    try {
+      const res = await api.getLoyaltyStatus();
+      if (res.success) setLoyalty(res.loyalty);
+    } catch (err) {}
+  };
+
+  const fetchWarranties = async () => {
+    try {
+      const res = await api.getWarranties();
+      if (res.success) setWarranties(res.warranties);
+    } catch (err) {}
+  };
+
+  const fetchSeasonalSuggestions = async () => {
+    try {
+      const res = await api.getSeasonalSuggestions();
+      if (res.success) setSeasonalSuggestions(res.suggestions);
     } catch (err) {}
   };
 
@@ -334,6 +376,51 @@ export function CustomerDashboard() {
     } catch (err) { alert(err.message); }
   };
 
+  const handleApplyCoupon = async (jobId) => {
+    if (!couponCode.trim()) return;
+    try {
+      const res = await api.applyCoupon({ code: couponCode, jobId });
+      if (res.success) {
+        setCouponResult(res);
+        alert(`Coupon applied! ₹${res.discount} discount.`);
+        await fetchActiveJobs();
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleCreateWarranty = async (jobId) => {
+    try {
+      const res = await api.createWarranty({ jobId, description: '1-year service warranty' });
+      if (res.success) {
+        setWarrantyModalJob(null);
+        alert(res.message);
+        await fetchWarranties();
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleClaimWarranty = async (warrantyId) => {
+    if (!window.confirm('Claim warranty for free re-service?')) return;
+    try {
+      const res = await api.claimWarranty(warrantyId, { issueDescription: 'Warranty re-service requested' });
+      if (res.success) {
+        alert(res.message);
+        await fetchWarranties();
+        await fetchActiveJobs();
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleScheduleCallback = async () => {
+    try {
+      const res = await api.scheduleCallback({ preferredTime: callbackTime || 'Next available', reason: callbackReason || 'General inquiry' });
+      if (res.success) {
+        setCallbackModal(false);
+        alert(res.message);
+      }
+    } catch (err) { alert(err.message); }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Banner */}
@@ -356,6 +443,17 @@ export function CustomerDashboard() {
         </div>
 
         <div className="flex items-center space-x-3">
+          {loyalty && (
+            <div className={`px-3 py-1.5 rounded-full text-xs font-bold flex items-center gap-1 ${
+              loyalty.currentTier === 'Platinum' ? 'bg-purple-100 text-purple-900 border border-purple-300' :
+              loyalty.currentTier === 'Gold' ? 'bg-amber-100 text-amber-900 border border-amber-300' :
+              loyalty.currentTier === 'Silver' ? 'bg-slate-200 text-slate-800 border border-slate-300' :
+              'bg-blue-50 text-blue-900 border border-blue-200'
+            }`}>
+              <Award className="w-3.5 h-3.5" />
+              {loyalty.currentTier} • {loyalty.discount}% off
+            </div>
+          )}
           <button
             onClick={fetchActiveJobs}
             className="p-2 text-slate-600 hover:text-blue-900 hover:bg-slate-100 rounded-lg text-xs font-semibold flex items-center gap-1 border border-slate-200"
@@ -935,6 +1033,16 @@ export function CustomerDashboard() {
                         </button>
                       )}
 
+                      {job.paymentStatus === 'PAID' && !warranties.find(w => w.jobId === job.id) && (
+                        <button
+                          onClick={() => handleCreateWarranty(job.id)}
+                          className="bg-emerald-50 hover:bg-emerald-100 text-emerald-800 px-2.5 py-1.5 rounded-lg text-[11px] font-bold border border-emerald-200 flex items-center gap-1"
+                        >
+                          <ShieldCheck className="w-3 h-3" />
+                          1yr Warranty
+                        </button>
+                      )}
+
                       <button
                         onClick={() => setComplaintModalJob(job)}
                         className="text-[11px] text-red-600 hover:text-red-800 underline ml-2"
@@ -962,6 +1070,122 @@ export function CustomerDashboard() {
               height="280px"
             />
           </div>
+
+          {/* Seasonal Service Suggestions */}
+          {seasonalSuggestions.length > 0 && (
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-amber-200 rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-amber-900 uppercase tracking-wider">
+                <Sun className="w-4 h-4 text-amber-600" />
+                Seasonal Recommendations
+              </div>
+              {seasonalSuggestions.map((s, idx) => (
+                <div key={idx} className="bg-white/70 p-3 rounded-xl border border-amber-100">
+                  <div className="font-bold text-xs text-slate-900">{s.message}</div>
+                  <div className="flex flex-wrap gap-1 mt-1.5">
+                    {s.services.map(svc => (
+                      <span key={svc} className="text-[10px] bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full font-semibold">{svc}</span>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Coupon Code Input */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <Tag className="w-4 h-4 text-emerald-600" />
+              Apply Coupon / Promo Code
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value.toUpperCase())}
+                placeholder="e.g. WELCOME50, SAHAKAR10"
+                className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs font-mono uppercase"
+              />
+              <button
+                onClick={() => handleApplyCoupon(activeJobs[activeJobs.length - 1]?.id)}
+                disabled={!couponCode.trim()}
+                className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 disabled:opacity-50 text-white text-xs font-bold rounded-lg"
+              >
+                Apply
+              </button>
+            </div>
+            {couponResult && (
+              <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg text-xs text-emerald-800">
+                ✓ Coupon <strong>{couponResult.coupon?.code}</strong> applied — ₹{couponResult.discount} discount!
+              </div>
+            )}
+            <div className="text-[10px] text-slate-400">Try: WELCOME50 (₹50 off), SAHAKAR10 (10% off above ₹500)</div>
+          </div>
+
+          {/* Schedule Callback */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+            <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+              <Headphones className="w-4 h-4 text-blue-700" />
+              Schedule a Callback
+            </div>
+            <div className="text-[11px] text-slate-500">Our support team will call you at your preferred time.</div>
+            <button
+              onClick={() => setCallbackModal(true)}
+              className="w-full py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-lg flex items-center justify-center gap-1"
+            >
+              <Phone className="w-3.5 h-3.5" />
+              Schedule Callback
+            </button>
+          </div>
+
+          {/* Active Warranties */}
+          {warranties.length > 0 && (
+            <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm space-y-3">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-700 uppercase tracking-wider">
+                <ShieldCheck className="w-4 h-4 text-emerald-600" />
+                Active Service Warranties
+              </div>
+              {warranties.map(w => (
+                <div key={w.id} className="p-2.5 bg-emerald-50 border border-emerald-200 rounded-xl text-xs">
+                  <div className="flex justify-between items-center">
+                    <div>
+                      <div className="font-bold text-slate-900">{w.serviceCategory} — #{w.jobCode}</div>
+                      <div className="text-[10px] text-slate-500">Expires: {new Date(w.expiresAt).toLocaleDateString()} • Claims: {w.claimsUsed}/{w.maxClaims}</div>
+                    </div>
+                    {w.status === 'Active' && w.claimsUsed < w.maxClaims && (
+                      <button onClick={() => handleClaimWarranty(w.id)} className="text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded font-bold">Claim Free Re-Service</button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Loyalty Tier Info */}
+          {loyalty && (
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-2xl p-4 shadow-sm space-y-2">
+              <div className="flex items-center gap-2 text-xs font-bold text-blue-900 uppercase tracking-wider">
+                <Award className="w-4 h-4 text-blue-700" />
+                Cooperative Loyalty Program
+              </div>
+              <div className="bg-white/70 p-3 rounded-xl border border-blue-100 text-xs space-y-1">
+                <div className="flex justify-between">
+                  <span className="font-bold text-slate-900">Tier: {loyalty.currentTier}</span>
+                  <span className="text-blue-800 font-bold">{loyalty.discount}% discount</span>
+                </div>
+                <div className="text-[10px] text-slate-500">Total spend: ₹{loyalty.totalSpend.toLocaleString()}</div>
+                {loyalty.nextTier && (
+                  <div className="text-[10px] text-blue-700 font-semibold">
+                    Spend ₹{loyalty.spendToNext.toLocaleString()} more to reach {loyalty.nextTier} ({loyalty.nextTier === 'Gold' ? '15%' : '20'}% off)
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-1 mt-1">
+                  {loyalty.benefits?.map((b, i) => (
+                    <span key={i} className="text-[9px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">{b}</span>
+                  ))}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
@@ -1252,6 +1476,48 @@ export function CustomerDashboard() {
             <div className="flex justify-end space-x-2">
               <button onClick={() => setRescheduleJob(null)} className="px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
               <button onClick={handleReschedule} className="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-sm">Confirm Reschedule</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL 8: Schedule Callback */}
+      {callbackModal && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-blue-200 w-full max-w-md p-6 space-y-4 animate-in zoom-in-95">
+            <h3 className="text-base font-bold text-slate-900 flex items-center gap-2">
+              <Headphones className="w-5 h-5 text-blue-700" />
+              Schedule a Callback
+            </h3>
+            <p className="text-xs text-slate-500">Our cooperative support team will call you at your preferred time.</p>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Preferred Time</label>
+                <select value={callbackTime} onChange={(e) => setCallbackTime(e.target.value)} className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs bg-white">
+                  <option value="Next available slot">Next available slot</option>
+                  <option value="Within 30 minutes">Within 30 minutes</option>
+                  <option value="Morning (9AM-12PM)">Morning (9AM-12PM)</option>
+                  <option value="Afternoon (12PM-4PM)">Afternoon (12PM-4PM)</option>
+                  <option value="Evening (4PM-8PM)">Evening (4PM-8PM)</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-slate-700 mb-1">Reason for Call</label>
+                <textarea
+                  rows="2"
+                  value={callbackReason}
+                  onChange={(e) => setCallbackReason(e.target.value)}
+                  placeholder="What do you need help with?"
+                  className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button onClick={() => setCallbackModal(false)} className="px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
+              <button onClick={handleScheduleCallback} className="px-5 py-2 bg-blue-900 hover:bg-blue-800 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1">
+                <Phone className="w-3.5 h-3.5" />
+                Confirm Callback
+              </button>
             </div>
           </div>
         </div>

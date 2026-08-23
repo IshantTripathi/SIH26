@@ -124,5 +124,23 @@ export const api = {
     return request(`/system/logs${query ? `?${query}` : ''}`);
   },
   getServices: () => request('/system/services'),
-  addService: (payload) => request('/system/services', { method: 'POST', body: JSON.stringify(payload) })
+  addService: (payload) => request('/system/services', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Loyalty & Tier System
+  getLoyaltyStatus: () => request('/loyalty'),
+
+  // Coupons
+  getCoupons: () => request('/coupons'),
+  applyCoupon: (payload) => request('/coupons/apply', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Warranty
+  getWarranties: () => request('/warranties'),
+  createWarranty: (payload) => request('/warranties', { method: 'POST', body: JSON.stringify(payload) }),
+  claimWarranty: (id, payload) => request(`/warranties/${id}/claim`, { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Callbacks
+  scheduleCallback: (payload) => request('/callbacks', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Seasonal Suggestions
+  getSeasonalSuggestions: () => request('/seasonal')
 };

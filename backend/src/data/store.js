@@ -47,6 +47,24 @@ class DataStore {
     this.guaranteePool = { balance: 50000, minWorkerEarnings: 15000, period: 'Monthly', totalDistributed: 0 };
     this.sosAlerts = [];
     this.rescheduleLog = [];
+    this.loyaltyTiers = [
+      { id: 'TIER-001', customerId: 'USR-CUST-001', totalSpend: 8500, tier: 'Silver', discount: 10, joinedAt: '2026-06-01T00:00:00Z', benefits: ['Priority booking', '10% discount on all services'] },
+      { id: 'TIER-002', customerId: 'USR-CUST-002', totalSpend: 16200, tier: 'Gold', discount: 15, joinedAt: '2026-03-15T00:00:00Z', benefits: ['Priority booking', 'Customized service', 'Early access', 'Family bookings', '15% discount'] }
+    ];
+    this.warranties = [];
+    this.coupons = [
+      { id: 'COUPON-001', code: 'WELCOME50', type: 'flat', value: 50, minOrder: 200, maxUses: 100, usedCount: 0, validFrom: '2026-01-01T00:00:00Z', validUntil: '2026-12-31T23:59:59Z', status: 'Active', description: '₹50 off first booking' },
+      { id: 'COUPON-002', code: 'SAHAKAR10', type: 'percent', value: 10, minOrder: 500, maxUses: 500, usedCount: 0, validFrom: '2026-01-01T00:00:00Z', validUntil: '2026-12-31T23:59:59Z', status: 'Active', description: '10% off on orders above ₹500' },
+      { id: 'COUPON-003', code: 'FESTIVE200', type: 'flat', value: 200, minOrder: 1000, maxUses: 50, usedCount: 0, validFrom: '2026-10-01T00:00:00Z', validUntil: '2026-11-30T23:59:59Z', status: 'Upcoming', description: '₹200 off festive season bookings above ₹1000' }
+    ];
+    this.callbacks = [];
+    this.issueTracking = [];
+    this.seasonalSuggestions = [
+      { season: 'Summer', months: [3,4,5], services: ['AC Servicing', 'Appliance Repair', 'Electrical'], message: 'Get your AC serviced before summer peak — book now for priority slots!', icon: 'Sun' },
+      { season: 'Monsoon', months: [6,7,8,9], services: ['Plumbing', 'Waterproofing', 'Pest Control'], message: 'Monsoon ready? Check pipes, waterproofing & pest control.', icon: 'CloudRain' },
+      { season: 'Winter', months: [11,12,1,2], services: ['Geyser Repair', 'Heater Service', 'Insulation'], message: 'Winter prep: Geyser & heater servicing available.', icon: 'Snowflake' },
+      { season: 'Festival', months: [10,11], services: ['Home Cleaning', 'Painting', 'Gardening'], message: 'Festival cleaning? Book deep cleaning & painting at cooperative rates.', icon: 'Sparkles' }
+    ];
   }
 
   // Generic collection accessor

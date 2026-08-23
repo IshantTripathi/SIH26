@@ -183,7 +183,7 @@ async function runVerification() {
     assert(claimRes.data.success === true, 'Welfare claim submitted to society board');
 
     // 10. Federation Macro Metrics
-    console.log('\n[10/15] Verifying Federation Dashboard & Governance API...');
+    console.log('\n[10/21] Verifying Federation Dashboard & Governance API...');
     const fedAuth = await makeRequest('/auth/login', {
       method: 'POST',
       body: JSON.stringify({ email: 'federation01@demo.coop', password: 'password123' })
@@ -196,7 +196,7 @@ async function runVerification() {
     assert(fedRes.data.macroMetrics.totalSocieties >= 2, 'Macro metrics aggregate affiliated societies');
 
     // 11. Hourly Pricing (1-4hr)
-    console.log('\n[11/15] Verifying Hourly Pricing & Multi-Task...');
+    console.log('\n[11/21] Verifying Hourly Pricing & Multi-Task...');
     const hourlyRes = await makeRequest('/jobs', {
       method: 'POST',
       token: custToken,
@@ -209,14 +209,14 @@ async function runVerification() {
     const hourlyJobId = hourlyRes.data.job.id;
 
     // 12. Top-3 Ranked Candidates
-    console.log('\n[12/15] Verifying Top-3 Ranked Candidate Picker...');
+    console.log('\n[12/21] Verifying Top-3 Ranked Candidate Picker...');
     assert(Array.isArray(hourlyRes.data.job.top3Candidates), 'top3Candidates is array');
     assert(hourlyRes.data.job.top3Candidates.length === 3, 'Top 3 candidates returned');
     assert(hourlyRes.data.job.top3Candidates[0].etaMinutes > 0, 'ETA minutes calculated');
     assert(hourlyRes.data.job.top3Candidates[0].ratingAvg > 0, 'Rating included in top3');
 
     // 13. Pack Credits
-    console.log('\n[13/15] Verifying Sahakar Monthly Pack & Free Re-Service...');
+    console.log('\n[13/21] Verifying Sahakar Monthly Pack & Free Re-Service...');
     const packRes = await makeRequest('/jobs/packs/credits', { token: custToken });
     assert(packRes.data.success === true, 'Pack credits endpoint works');
     assert(packRes.data.creditsRemaining >= 0, 'Credits remaining returned');
@@ -231,7 +231,7 @@ async function runVerification() {
     assert(freeJobRes.data.job.pricing.grossAmount === 0, 'Gross amount is 0 with pack');
 
     // 14. Reschedule (2hr free) + Live ETA + SOS
-    console.log('\n[14/15] Verifying Reschedule, Live ETA & SOS...');
+    console.log('\n[14/21] Verifying Reschedule, Live ETA & SOS...');
     const rescheduleRes = await makeRequest(`/jobs/${hourlyJobId}/reschedule`, {
       method: 'POST',
       token: custToken,
@@ -253,7 +253,7 @@ async function runVerification() {
     assert(sosRes.data.alert.status === 'ACTIVE', 'SOS alert marked active');
 
     // 15. Punctuality % in Scoring
-    console.log('\n[15/15] Verifying Worker Punctuality % in Allocation...');
+    console.log('\n[15/21] Verifying Worker Punctuality % in Allocation...');
     const simRes = await makeRequest('/allocation/simulate', {
       method: 'POST',
       token: custToken,
@@ -262,6 +262,64 @@ async function runVerification() {
     assert(simRes.data.success === true, 'Allocation simulation works');
     assert(typeof simRes.data.allocationResult.rankedCandidates[0].punctualityPercent === 'number', 'Punctuality % included in scoring');
     assert(simRes.data.allocationResult.rankedCandidates[0].punctualityPercent >= 0, 'Punctuality is valid percentage');
+
+    // 16. Loyalty Tier System
+    console.log('\n[16/21] Verifying Urban Company-style Loyalty Tiers...');
+    const loyaltyRes = await makeRequest('/loyalty', { token: custToken });
+    assert(loyaltyRes.data.success === true, 'Loyalty status retrieved');
+    assert(typeof loyaltyRes.data.loyalty.totalSpend === 'number', 'Total spend calculated');
+    assert(loyaltyRes.data.loyalty.allTiers.length === 3, 'Three tiers defined (Silver/Gold/Platinum)');
+
+    // 17. Coupon System
+    console.log('\n[17/21] Verifying Coupon/Promo Code System...');
+    const couponsRes = await makeRequest('/coupons', { token: custToken });
+    assert(couponsRes.data.success === true, 'Coupons list retrieved');
+    assert(couponsRes.data.coupons.length >= 2, 'Demo coupons available');
+    const couponApplyRes = await makeRequest('/coupons/apply', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ code: 'WELCOME50', jobId: hourlyJobId })
+    });
+    assert(couponApplyRes.data.success === true, 'Coupon WELCOME50 applied');
+    assert(couponApplyRes.data.discount === 50, 'Coupon discount is ₹50');
+
+    // 18. Service Warranty
+    console.log('\n[18/21] Verifying 1-Year Service Warranty...');
+    const paidJob = (await makeRequest('/jobs', { token: custToken })).data.jobs.find(j => j.paymentStatus === 'PAID' && (j.status === 'COMPLETED' || j.status === 'PAID'));
+    assert(paidJob !== undefined, 'Found a paid job for warranty');
+    const warrantyCreateRes = await makeRequest('/warranties', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ jobId: paidJob.id, description: '1-year service warranty' })
+    });
+    assert(warrantyCreateRes.data.success === true, 'Warranty created successfully');
+    assert(warrantyCreateRes.data.warranty.warrantyPeriod === '1 Year', 'Warranty period is 1 year');
+    assert(warrantyCreateRes.data.warranty.maxClaims === 2, 'Max 2 warranty claims');
+    const warrantyId = warrantyCreateRes.data.warranty.id;
+
+    // 19. Callback Scheduling
+    console.log('\n[19/21] Verifying Schedule Callback...');
+    const cbRes = await makeRequest('/callbacks', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ preferredTime: 'Afternoon (12PM-4PM)', reason: 'Booking assistance needed' })
+    });
+    assert(cbRes.data.success === true, 'Callback scheduled');
+    assert(cbRes.data.callback.status === 'Scheduled', 'Callback status is Scheduled');
+
+    // 20. Seasonal Suggestions
+    console.log('\n[20/21] Verifying Seasonal Service Suggestions...');
+    const seasonRes = await makeRequest('/seasonal', { token: custToken });
+    assert(seasonRes.data.success === true, 'Seasonal suggestions retrieved');
+    assert(seasonRes.data.suggestions.length >= 1, 'Current season has suggestions');
+    assert(seasonRes.data.suggestions[0].services.length >= 2, 'Suggestions include services');
+
+    // 21. Warranty Claim (free re-service)
+    console.log('\n[21/21] Verifying Warranty Claim (Free Re-Service)...');
+    const warrantyClaimRes = await makeRequest(`/warranties/${warrantyId}/claim`, {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ issueDescription: 'Issue recurred after repair' })
+    });
+    assert(warrantyClaimRes.data.success === true, 'Warranty claim approved');
+    assert(warrantyClaimRes.data.newJob.pricing.grossAmount === 0, 'Re-service is free (₹0)');
+    assert(warrantyClaimRes.data.newJob.isWarrantyClaim === true, 'Job marked as warranty claim');
 
     console.log('\n====================================================');
     console.log(` TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
