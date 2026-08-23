@@ -6,7 +6,7 @@
 
 ## Table of Contents
 1. [Problem Statement Overview](#1-problem-statement-overview)
-2. [Proposed Solution](#2-proosed-solution)
+2. [Proposed Solution](#2-proposed-solution)
 3. [Complete Feature List](#3-complete-feature-list)
 4. [Innovative Differentiators vs Existing Apps](#4-innovative-differentiators)
 5. [Technology Architecture](#5-technology-architecture)

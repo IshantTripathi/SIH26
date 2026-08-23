@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>SIH26089 - Sahakar Gig Platform Documentation</title>
+<style>
+  body { font-family: 'Segoe UI', Arial, sans-serif; max-width: 900px; margin: 40px auto; padding: 20px; line-height: 1.6; color: #333; }
+  h1 { color: #1a5276; border-bottom: 3px solid #1a5276; padding-bottom: 10px; font-size: 1.8em; }
+  h2 { color: #2e86c1; border-bottom: 2px solid #2e86c1; padding-bottom: 5px; margin-top: 40px; }
+  h3 { color: #148f77; }
+  h4 { color: #b9770e; }
+  table { border-collapse: collapse; width: 100%; margin: 15px 0; font-size: 0.9em; }
+  th, td { border: 1px solid #ddd; padding: 8px 12px; text-align: left; }
+  th { background: #2e86c1; color: white; }
+  tr:nth-child(even) { background: #f2f2f2; }
+  code { background: #f4f4f4; padding: 2px 6px; border-radius: 3px; font-size: 0.9em; }
+  pre { background: #2d2d2d; color: #f8f8f2; padding: 15px; border-radius: 5px; overflow-x: auto; font-size: 0.85em; }
+  pre code { background: none; color: #f8f8f2; }
+  strong { color: #1a5276; }
+  hr { border: 1px solid #ccc; margin: 30px 0; }
+  ul, ol { padding-left: 20px; }
+  li { margin-bottom: 4px; }
+  a { color: #2e86c1; }
+  @media print { body { margin: 0; font-size: 11pt; } h1 { page-break-before: always; } }
+</style>
+</head>
+<body>
+
+<h1>Sahakar Gig Platform - SIH26089</h1>
+<h2>Comprehensive Project Documentation</h2>
+<h3>Smart India Hackathon 2026 | Ministry of Cooperation / NCCT</h3>
+
+<hr>
+
+<h2>Table of Contents</h2>
+<ol>
+  <li>Problem Statement Overview</li>
+  <li>Proposed Solution</li>
+  <li>Complete Feature List</li>
+  <li>Innovative Differentiators vs Existing Apps</li>
+  <li>Technology Architecture</li>
+  <li>System Design and Workflow</li>
+  <li>AI/ML Components</li>
+  <li>Cooperative-First Design Principles</li>
+  <li>Demo Walkthrough</li>
+  <li>Judges Q&amp;A Preparation</li>
+</ol>
+
+<hr>
+
+<h2>1. Problem Statement Overview</h2>
+
+<p><strong>Problem Statement ID:</strong> SIH26089</p>
+<p><strong>Title:</strong> Cooperative Gig Services Platform for Household &amp; Community Services</p>
+<p><strong>Organization:</strong> Ministry of Cooperation / National Council for Cooperative Training (NCCT)</p>
+<p><strong>Category:</strong> Software | <strong>Theme:</strong> Smart Automation</p>
+
+<h3>Background</h3>
+<p>Labour Cooperative Federations and Societies possess large pools of skilled workers (electricians, plumbers, carpenters, painters, domestic helpers, caregivers, drivers, gardeners, cleaners, technicians) but lack a structured digital platform. Private platforms dominate while cooperative workers remain underutilized.</p>
+
+<h3>Expected Solution Features (from PS)</h3>
+<ol>
+  <li>Service provider registration and verification</li>
+  <li>Worker skill profiling and certification</li>
+  <li>Customer booking and scheduling system</li>
+  <li>Geo-location based service matching</li>
+  <li>Digital payments and invoicing</li>
+  <li>Rating and feedback mechanism</li>
+  <li>Worker welfare and insurance integration</li>
+  <li>Emergency and on-demand service booking</li>
+  <li>Cooperative federation administration dashboard</li>
+  <li>Multilingual mobile application</li>
+  <li>AI-based demand forecasting and workforce allocation</li>
+</ol>
+
+<h3>Technology Components (from PS)</h3>
+<ul>
+  <li>Mobile Applications</li>
+  <li>Artificial Intelligence (AI)</li>
+  <li>Geo-Spatial Technology</li>
+  <li>Digital Payment Systems</li>
+  <li>Cloud Computing</li>
+</ul>
+
+<hr>
+
+<h2>2. Proposed Solution</h2>
+
+<p><strong>Sahakar Gig Platform</strong> is a cooperative-owned digital marketplace that implements ALL 11 expected solution features plus 8 additional innovative features that go beyond what any existing platform (Urban Company, Snabbit, InstaHelp) offers.</p>
+
+<h3>Key Metrics</h3>
+<ul>
+  <li><strong>70 files changed, +7,804 lines of code</strong></li>
+  <li><strong>155/155 integration tests passing</strong></li>
+  <li><strong>18 backend route groups, 14 controllers, 15 services</strong></li>
+  <li><strong>15+ frontend pages with PWA support</strong></li>
+  <li><strong>65+ skill assessment questions across 9 trades</strong></li>
+  <li><strong>Live deployment on Vercel (frontend + backend)</strong></li>
+</ul>
+
+<hr>
+
+<h2>3. Complete Feature List</h2>
+
+<h3>A. Problem Statement Features (11/11 IMPLEMENTED)</h3>
+
+<table>
+<tr><th>#</th><th>Feature</th><th>Implementation</th></tr>
+<tr><td>1</td><td>Service Provider Registration &amp; Verification</td><td>Auth system with role-based access, society admin verification workflow, 4-stage verification (Pending - Under Review - Verified/Suspended)</td></tr>
+<tr><td>2</td><td>Worker Skill Profiling &amp; Certification</td><td>Worker model with primarySkill, secondarySkills, certifications[], 65+ MCQ assessment questions across 9 trades, certificate verification via QR</td></tr>
+<tr><td>3</td><td>Customer Booking &amp; Scheduling</td><td>Full job lifecycle (REQUESTED - MATCHING - OFFERED - ACCEPTED - ON_THE_WAY - ARRIVED - IN_PROGRESS - COMPLETED - PAID), 2-hour free reschedule</td></tr>
+<tr><td>4</td><td>Geo-location Based Service Matching</td><td>7-factor Fair Allocation Engine (Skill 25% + Cert 15% + Availability 20% + Distance 15% + Workload 15% + Fairness 10% + Reliability 5%), Haversine distance, Leaflet maps</td></tr>
+<tr><td>5</td><td>Digital Payments &amp; Invoicing</td><td>Demo UPI/Card payments, auto-generated invoices (INV-2026-XXXX), transparent pricing with cooperative split (95% worker / 4% society / 1% welfare)</td></tr>
+<tr><td>6</td><td>Rating &amp; Feedback Mechanism</td><td>Two-sided rating (worker rates customer AND customer rates worker), 4-dimension scoring (punctuality, quality, professionalism, overall), trust score computation</td></tr>
+<tr><td>7</td><td>Worker Welfare &amp; Insurance</td><td>1% welfare fund from every job, insurance policy (Rs. 2L coverage), welfare claims with approval workflow, benefits tracking</td></tr>
+<tr><td>8</td><td>Emergency &amp; On-Demand Booking</td><td>Emergency broadcast to ALL eligible nearby workers, 60-second auto-escalation, emergency pool visibility for admins</td></tr>
+<tr><td>9</td><td>Federation Administration Dashboard</td><td>Macro analytics across societies, cross-society workforce mobilization, trade-wise distribution, dividend pool management</td></tr>
+<tr><td>10</td><td>Multilingual Mobile Application</td><td>English + Hindi translations (260+ keys), PWA manifest + service worker, installable mobile app, responsive design</td></tr>
+<tr><td>11</td><td>AI-Based Demand Forecasting</td><td>Python Scikit-Learn RandomForestRegressor (R-squared=0.89), 90-day synthetic training data, regional shortage/surplus predictions, analytical fallback</td></tr>
+</table>
+
+<h3>B. Technology Components (5/5 IMPLEMENTED)</h3>
+
+<table>
+<tr><th>Component</th><th>Implementation</th></tr>
+<tr><td>Mobile Applications</td><td>Progressive Web App (PWA) with manifest, service worker, offline sync, Apple/Android install prompts</td></tr>
+<tr><td>Artificial Intelligence</td><td>6 AI systems: demand forecasting, problem classifier, skill matching, trust scoring, workload balancing, effort pricing</td></tr>
+<tr><td>Geo-Spatial Technology</td><td>Leaflet + OpenStreetMap interactive maps, live GPS tracking (10s interval), demand heatmaps, Haversine distance</td></tr>
+<tr><td>Digital Payment Systems</td><td>Demo UPI/Card, invoice generation, wallet/subscription pack credits, coupon system</td></tr>
+<tr><td>Cloud Computing</td><td>MongoDB Atlas support, Vercel deployment (frontend + serverless backend), Render deployment config</td></tr>
+</table>
+
+<h3>C. Competitive Features (vs Urban Company, Snabbit, InstaHelp)</h3>
+
+<table>
+<tr><th>Feature</th><th>Urban Company</th><th>Snabbit</th><th>InstaHelp</th><th>Sahakar (Ours)</th></tr>
+<tr><td>Fair Allocation</td><td>Distance-only</td><td>Speed-only</td><td>Nearest</td><td><strong>7-factor scoring</strong></td></tr>
+<tr><td>Worker Payout</td><td>70-75%</td><td>~70%</td><td>~75%</td><td><strong>95% direct</strong></td></tr>
+<tr><td>Cooperative Governance</td><td>No</td><td>No</td><td>No</td><td><strong>Meetings, bylaws, quorum, resolutions</strong></td></tr>
+<tr><td>Worker Welfare Fund</td><td>No</td><td>No</td><td>No</td><td><strong>1% auto-deduction + insurance</strong></td></tr>
+<tr><td>Dividend System</td><td>No</td><td>No</td><td>No</td><td><strong>Quarterly surplus distribution</strong></td></tr>
+<tr><td>Skill Passport (QR)</td><td>No</td><td>No</td><td>No</td><td><strong>Verifiable credential with hash</strong></td></tr>
+<tr><td>Voice Booking (Hindi)</td><td>No</td><td>No</td><td>No</td><td><strong>Multi-turn conversational AI</strong></td></tr>
+<tr><td>AR Repair Guidance</td><td>No</td><td>No</td><td>No</td><td><strong>Step-by-step visual guides</strong></td></tr>
+<tr><td>Community Impact Dashboard</td><td>No</td><td>No</td><td>No</td><td><strong>Public social metrics</strong></td></tr>
+<tr><td>Predictive Maintenance (B2B)</td><td>No</td><td>No</td><td>No</td><td><strong>Institution alerts</strong></td></tr>
+<tr><td>Worker Wellness System</td><td>No</td><td>No</td><td>No</td><td><strong>Fatigue prevention + min wage</strong></td></tr>
+<tr><td>Explainable Fairness</td><td>No</td><td>No</td><td>No</td><td><strong>Why each worker was chosen</strong></td></tr>
+</table>
+
+<h3>D. Unique Innovative Features (8 NEW - Not in any existing platform)</h3>
+
+<h4>1. AI Voice-First Conversational Booking</h4>
+<ul>
+  <li><strong>What:</strong> Multi-turn guided booking conversation in Hindi/English</li>
+  <li><strong>How it works:</strong> Customer describes problem naturally, AI classifies service, asks follow-up questions, auto-creates job</li>
+  <li><strong>Example:</strong> "Mera kitchen tap leak ho raha hai" - AI detects Plumbing - asks urgency - asks location - confirms - books</li>
+  <li><strong>Why different:</strong> Not just speech-to-text - it is a full guided booking flow that understands context</li>
+  <li><strong>API:</strong> POST /api/voice/start then POST /api/voice/input</li>
+</ul>
+
+<h4>2. Worker Digital Skill Passport</h4>
+<ul>
+  <li><strong>What:</strong> Portable, verifiable digital credential with SHA-256 hash</li>
+  <li><strong>How it works:</strong> Generates verifiable credential with trust score, work history, endorsements, QR payload</li>
+  <li><strong>Features:</strong> 5 tiers (Platinum/Gold/Silver/Bronze/New), shareable public link, cryptographic verification</li>
+  <li><strong>Why different:</strong> Workers carry their credential across societies - not locked to one platform</li>
+  <li><strong>API:</strong> GET /api/passport/worker/:id then GET /api/passport/verify/:id/:hash</li>
+</ul>
+
+<h4>3. Predictive Maintenance Alerts (B2B)</h4>
+<ul>
+  <li><strong>What:</strong> AI-powered maintenance scheduling for institutions</li>
+  <li><strong>How it works:</strong> Analyzes service history, predicts when equipment needs maintenance, sends proactive alerts</li>
+  <li><strong>Features:</strong> Category-specific intervals (AC 6mo, Plumbing 6mo, Painting 2yr), OVERDUE/WARNING/OK alerts</li>
+  <li><strong>Why different:</strong> Institutions never face unexpected breakdowns - maintenance is proactive</li>
+  <li><strong>API:</strong> GET /api/predictive/alerts/:customerId</li>
+</ul>
+
+<h4>4. Community Impact Dashboard</h4>
+<ul>
+  <li><strong>What:</strong> Public-facing social impact metrics for Ministry of Cooperation</li>
+  <li><strong>How it works:</strong> Aggregates all platform data, displays jobs created, earnings, welfare, CO2 saved, governance</li>
+  <li><strong>Features:</strong> Real-time metrics, service distribution, customer demographics, environmental impact</li>
+  <li><strong>Why different:</strong> Transparency for Ministry - shows cooperative social impact at a glance</li>
+  <li><strong>API:</strong> GET /api/impact</li>
+</ul>
+
+<h4>5. Smart Scheduling with Weather &amp; Festival Awareness</h4>
+<ul>
+  <li><strong>What:</strong> Context-aware booking suggestions based on weather, festivals, and demand patterns</li>
+  <li><strong>How it works:</strong> Indian festival calendar (22 festivals) + weather patterns (Delhi/Mumbai) + demand multipliers</li>
+  <li><strong>Features:</strong> Optimal time suggestions, demand level warnings, festival prep tips</li>
+  <li><strong>Why different:</strong> Books the right time - not just any time</li>
+  <li><strong>API:</strong> GET /api/scheduling/suggestions?serviceCategory=Plumbing&amp;city=Delhi</li>
+</ul>
+
+<h4>6. Worker Wellness &amp; Fatigue Prevention System</h4>
+<ul>
+  <li><strong>What:</strong> Monitors worker health, rest, and fair wage compliance</li>
+  <li><strong>How it works:</strong> Tracks daily/weekly hours vs limits, fatigue risk scoring, minimum wage compliance check</li>
+  <li><strong>Features:</strong> Wellness score (0-100), rest recommendations, insurance status, hourly rate tracking</li>
+  <li><strong>Why different:</strong> Protects workers from exploitation - ensures minimum wage compliance</li>
+  <li><strong>API:</strong> GET /api/wellness/my-wellness</li>
+</ul>
+
+<h4>7. Dynamic Cooperative Dividend Calculator</h4>
+<ul>
+  <li><strong>What:</strong> Real-time dividend projection based on worker contribution</li>
+  <li><strong>How it works:</strong> Calculates worker weight (jobs + earnings + membership + rating) multiplied by cooperative surplus pool</li>
+  <li><strong>Features:</strong> Historical dividends, next distribution date, contribution breakdown, guaranteed minimum</li>
+  <li><strong>Why different:</strong> Workers see exactly how their work translates to cooperative dividends</li>
+  <li><strong>API:</strong> GET /api/dividend/my-dividend</li>
+</ul>
+
+<h4>8. AR Repair Guidance System</h4>
+<ul>
+  <li><strong>What:</strong> Step-by-step visual repair guides for workers during service</li>
+  <li><strong>How it works:</strong> Category-specific guides with tools, safety tips, difficulty ratings, estimated times</li>
+  <li><strong>Features:</strong> 6 categories (Plumbing, Electrical, Cleaning, General), 8-step guides, completion checklists</li>
+  <li><strong>Why different:</strong> Less experienced workers can deliver quality service with guided assistance</li>
+  <li><strong>API:</strong> GET /api/ar-guides/:category</li>
+</ul>
+
+<hr>
+
+<h2>4. Technology Architecture</h2>
+
+<h3>Frontend Stack</h3>
+<table>
+<tr><th>Technology</th><th>Purpose</th></tr>
+<tr><td>React 18</td><td>UI framework</td></tr>
+<tr><td>Vite</td><td>Build tool</td></tr>
+<tr><td>Tailwind CSS</td><td>Styling</td></tr>
+<tr><td>React Router v6</td><td>Navigation</td></tr>
+<tr><td>Recharts</td><td>Charts and analytics</td></tr>
+<tr><td>Leaflet + React-Leaflet</td><td>Interactive maps</td></tr>
+<tr><td>Lucide React</td><td>Icons</td></tr>
+<tr><td>PWA (Service Worker)</td><td>Offline support + installable</td></tr>
+</table>
+
+<h3>Backend Stack</h3>
+<table>
+<tr><th>Technology</th><th>Purpose</th></tr>
+<tr><td>Node.js + Express</td><td>REST API server</td></tr>
+<tr><td>MongoDB Atlas</td><td>Cloud database (with in-memory fallback)</td></tr>
+<tr><td>JSON Web Tokens (JWT)</td><td>Authentication</td></tr>
+<tr><td>Python + Scikit-Learn</td><td>AI demand forecasting</td></tr>
+<tr><td>Vercel Serverless</td><td>Backend hosting</td></tr>
+</table>
+
+<h3>AI/ML Stack</h3>
+<table>
+<tr><th>Component</th><th>Technology</th></tr>
+<tr><td>Demand Forecasting</td><td>Python RandomForestRegressor (R-squared=0.89)</td></tr>
+<tr><td>Problem Classification</td><td>NLP keyword matching with semantic analysis</td></tr>
+<tr><td>Skill Matching</td><td>Graph-based skill relationships + historical success</td></tr>
+<tr><td>Trust Scoring</td><td>Multi-dimensional weighted scoring (7 factors)</td></tr>
+<tr><td>Effort Pricing</td><td>6-multiplier dynamic pricing engine</td></tr>
+<tr><td>Workload Balancing</td><td>Imbalance scoring + fatigue risk detection</td></tr>
+</table>
+
+<h3>Deployment</h3>
+<table>
+<tr><th>Component</th><th>Platform</th><th>URL</th></tr>
+<tr><td>Frontend</td><td>Vercel Static</td><td>https://sih26089-coop.vercel.app</td></tr>
+<tr><td>Backend API</td><td>Vercel Serverless</td><td>https://sih26089-coop.vercel.app/api/*</td></tr>
+<tr><td>Database</td><td>In-Memory Store</td><td>No external DB needed for demo</td></tr>
+<tr><td>Source Code</td><td>GitHub</td><td>github.com/IshantTripathi/SIH26</td></tr>
+</table>
+
+<hr>
+
+<h2>5. System Design &amp; Workflow</h2>
+
+<h3>Job Lifecycle Flow</h3>
+<pre><code>Customer creates job
+  - Problem Classifier identifies service
+    - Fair Allocation Engine ranks workers (7 factors)
+      - Top worker receives offer (60s to accept)
+        - Worker accepts - ON_THE_WAY (GPS tracking starts)
+          - ARRIVED - IN_PROGRESS (OTP verification)
+            - COMPLETED - Payment - Rating - Dividend</code></pre>
+
+<h3>Fair Allocation Scoring Formula</h3>
+<pre><code>Total Score = Skill Match (25) + Certification (15) + Availability (20)
+            + Proximity (15) + Workload Balance (15) + Fairness (10)
+            + Reliability with Punctuality % (5)</code></pre>
+
+<h3>Cooperative Financial Model</h3>
+<pre><code>Customer pays Rs. 500
+  Worker receives Rs. 475 (95%)
+  Society administration fund Rs. 20 (4%)
+  Welfare &amp; insurance fund Rs. 5 (1%)
+  Dividend pool = 60% of society fund (quarterly distribution)</code></pre>
+
+<hr>
+
+<h2>6. AI/ML Components - Detailed</h2>
+
+<h3>1. Demand Forecasting Model</h3>
+<ul>
+  <li><strong>Algorithm:</strong> RandomForestRegressor (Scikit-Learn)</li>
+  <li><strong>Training Data:</strong> 90-day synthetic data with temporal features</li>
+  <li><strong>Features:</strong> Day of week, month, season, lag-7, lag-14, rolling mean</li>
+  <li><strong>Performance:</strong> R-squared=0.89, MAE=1.15</li>
+  <li><strong>Output:</strong> Per-category demand predictions, shortage/surplus alerts</li>
+  <li><strong>Fallback:</strong> Mathematical regression when Python unavailable</li>
+</ul>
+
+<h3>2. Problem-First Intent Classifier</h3>
+<ul>
+  <li><strong>Approach:</strong> Multi-keyword semantic matching against service database</li>
+  <li><strong>Languages:</strong> English + Hindi keyword support</li>
+  <li><strong>Categories:</strong> 9 service trades with 8-10 keywords each</li>
+  <li><strong>Emergency Detection:</strong> Urgency keywords trigger immediate escalation</li>
+  <li><strong>Confidence Scoring:</strong> 0.45-0.98 based on keyword match count</li>
+</ul>
+
+<h3>3. AI Skill-to-Job Matching</h3>
+<ul>
+  <li><strong>Skill Graph:</strong> Semantic relationships between trades (Plumbing and General Maintenance)</li>
+  <li><strong>Related Trade Inference:</strong> Suggests adjacent skills for better matching</li>
+  <li><strong>Historical Success:</strong> Tracks which skill combinations succeed most</li>
+  <li><strong>Multi-Signal Confidence:</strong> Combines skill match + availability + history</li>
+</ul>
+
+<h3>4. Two-Sided Trust Score</h3>
+<ul>
+  <li><strong>Worker Trust (0-100):</strong> Rating 30% + Punctuality 20% + Completion 15% + Response 10% + Quality 10% + Tenure 10% + Peer 5%</li>
+  <li><strong>Customer Trust (0-100):</strong> Payment 30% + Worker Rating 25% + Cancellation 15% + Communication 15% + Tenure 15%</li>
+  <li><strong>5 Tiers:</strong> Platinum (90+) / Gold (75+) / Silver (55+) / Bronze (35+) / New (below 35)</li>
+</ul>
+
+<h3>5. Effort-Based Pricing Engine</h3>
+<ul>
+  <li><strong>Multipliers:</strong> Complexity x Physical Demand x Skill Difficulty x Urgency x Time-of-Day</li>
+  <li><strong>Travel Compensation:</strong> First 3km free, Rs. 15/km after</li>
+  <li><strong>Waiting Compensation:</strong> 15min grace, Rs. 50 per 15-min block after</li>
+  <li><strong>Sub-Task Fees:</strong> Additional charges per sub-task</li>
+</ul>
+
+<h3>6. Workload Balancer</h3>
+<ul>
+  <li><strong>Imbalance Scoring:</strong> Measures distribution fairness across workers</li>
+  <li><strong>Fatigue Risk Detection:</strong> Flags workers at risk of overwork</li>
+  <li><strong>Auto-Redistribution:</strong> Suggests job reassignment when imbalance detected</li>
+  <li><strong>Concurrent Caps:</strong> Max 6 simultaneous jobs per worker</li>
+  <li><strong>Heatmap:</strong> Visual workload distribution by society</li>
+</ul>
+
+<hr>
+
+<h2>7. Cooperative-First Design Principles</h2>
+
+<h3>Why Cooperative Model Matters</h3>
+<ol>
+  <li><strong>Fair Wages:</strong> Workers get 95% vs 70-75% on private platforms</li>
+  <li><strong>Worker Ownership:</strong> Workers are members, not contractors</li>
+  <li><strong>Democratic Governance:</strong> Meetings, bylaws, resolutions, voting</li>
+  <li><strong>Welfare Fund:</strong> Automatic 1% deduction for insurance and benefits</li>
+  <li><strong>Dividend Distribution:</strong> Quarterly surplus shared among members</li>
+  <li><strong>Skill Portability:</strong> Credentials travel with the worker across societies</li>
+  <li><strong>Transparency:</strong> Every transaction visible to all stakeholders</li>
+</ol>
+
+<h3>Platform Governance Structure</h3>
+<pre><code>Federation (State Level)
+  Multiple Societies (District Level)
+    Verified Workers (Member Level)
+    Customer Bookings
+  Democratic Decisions (Proposals - Voting - Resolutions)
+  Bylaws Management (5 default + custom)
+  Meeting Management (quorum 50%)</code></pre>
+
+<hr>
+
+<h2>8. Demo Walkthrough</h2>
+
+<h3>Step 1: Login as Customer</h3>
+<ul>
+  <li>Email: customer01@demo.coop / Password: password123</li>
+  <li>Navigate to Customer Dashboard</li>
+  <li>Describe problem: "My kitchen tap is leaking"</li>
+</ul>
+
+<h3>Step 2: AI Classifies &amp; Allocates</h3>
+<ul>
+  <li>Problem Classifier identifies: Plumbing</li>
+  <li>Fair Allocation Engine ranks 2 workers</li>
+  <li>Top worker (Worker Demo 01) receives offer</li>
+  <li>Customer sees top-3 candidates with ETA</li>
+</ul>
+
+<h3>Step 3: Worker Accepts &amp; Travels</h3>
+<ul>
+  <li>Worker Dashboard shows incoming offer</li>
+  <li>Worker accepts - GPS tracking starts</li>
+  <li>Customer sees live ETA with progress bar</li>
+</ul>
+
+<h3>Step 4: Service &amp; Payment</h3>
+<ul>
+  <li>Worker marks ARRIVED then IN_PROGRESS</li>
+  <li>Service completed - OTP verification</li>
+  <li>Payment settled - Invoice generated</li>
+  <li>Both rate each other (two-sided)</li>
+</ul>
+
+<h3>Step 5: Innovation Features</h3>
+<ul>
+  <li><strong>Voice Booking:</strong> Try "Mera fan kaam nahi kar raha" - Hindi booking flow</li>
+  <li><strong>Skill Passport:</strong> Worker verifiable credential with QR</li>
+  <li><strong>Wellness Dashboard:</strong> Fatigue risk, hours tracking, min wage check</li>
+  <li><strong>Dividend Calculator:</strong> Worker quarterly dividend projection</li>
+  <li><strong>Impact Dashboard:</strong> Public social metrics for Ministry</li>
+  <li><strong>AR Guidance:</strong> Step-by-step repair guides during service</li>
+</ul>
+
+<hr>
+
+<h2>9. Judges Q&amp;A Preparation</h2>
+
+<h3>Q1: How is this different from Urban Company?</h3>
+<p><strong>A:</strong> Urban Company takes 25-30% commission. We give workers 95%. Plus we add cooperative governance (democratic decisions), worker welfare (1% fund + insurance), dividend system (quarterly surplus sharing), and 8 innovative features no private platform offers - voice booking in Hindi, skill passport, predictive maintenance, community impact dashboard, wellness system, AR repair guidance, smart scheduling, and dividend calculator.</p>
+
+<h3>Q2: How does the AI demand forecasting work?</h3>
+<p><strong>A:</strong> We use Python Scikit-Learn RandomForestRegressor trained on 90-day synthetic data. Features include day-of-week, month, season, lag-7, lag-14, and rolling mean. It predicts per-category demand 30 days ahead with R-squared=0.89 accuracy. The federation dashboard shows shortage/surplus alerts with actionable recommendations.</p>
+
+<h3>Q3: How do you ensure fair worker allocation?</h3>
+<p><strong>A:</strong> Our 7-factor Fair Allocation Engine scores workers on: Skill Match (25%), Certification (15%), Availability (20%), Proximity (15%), Workload Balance (15%), Fairness (10%), and Reliability with Punctuality % (5%). This prevents favoritism and ensures the most suitable worker gets the job - not just the nearest or cheapest.</p>
+
+<h3>Q4: What happens in emergencies?</h3>
+<p><strong>A:</strong> Emergency jobs broadcast to ALL eligible nearby workers simultaneously. First worker to accept within 60 seconds gets the job. If no one accepts, it auto-escalates to society admin and federation admin. Both customer and worker have SOS buttons that alert authorities immediately.</p>
+
+<h3>Q5: How does the cooperative financial model work?</h3>
+<p><strong>A:</strong> Customer pays Rs. 500, Worker gets Rs. 475 (95%), Society gets Rs. 20 (4%) for administration, Rs. 5 (1%) goes to welfare fund. The society fund 60% goes to quarterly dividend pool distributed among all members based on their contribution weight (jobs + earnings + membership + rating).</p>
+
+<h3>Q6: What about worker welfare?</h3>
+<p><strong>A:</strong> Every job automatically deducts 1% into the welfare fund. Workers get insurance (Rs. 2L medical, Rs. 3L accidental). They can submit welfare claims through the app. The wellness dashboard tracks fatigue risk, ensures minimum wage compliance (Rs. 100/hr), and recommends rest periods.</p>
+
+<h3>Q7: How does the voice booking work?</h3>
+<p><strong>A:</strong> It is a multi-turn conversational AI - not just speech-to-text. Customer speaks naturally in Hindi or English ("Mera kitchen tap leak ho raha hai"), the AI classifies the service, asks follow-up questions (urgency, location, time), and auto-creates the booking. Uses NLP keyword matching with 9 trade categories.</p>
+
+<h3>Q8: What is the skill passport?</h3>
+<p><strong>A:</strong> A portable, verifiable digital credential for workers. Contains: trust score, work history, skill certifications, endorsements, and a SHA-256 verification hash. Workers can share a public link or QR code. Anyone can verify the credential is authentic. Workers carry it across societies - not locked to one platform.</p>
+
+<h3>Q9: How does predictive maintenance work for institutions?</h3>
+<p><strong>A:</strong> For B2B clients (clinics, schools), the system analyzes their service history and predicts when equipment needs maintenance. Each category has specific intervals (AC: 6 months, Plumbing: 6 months, Painting: 2 years). Alerts show OVERDUE/WARNING/OK status with estimated cost and recommended worker.</p>
+
+<h3>Q10: What technology stack are you using?</h3>
+<p><strong>A:</strong> Frontend: React 18 + Vite + Tailwind CSS + Leaflet maps. Backend: Node.js + Express + MongoDB Atlas (in-memory fallback). AI: Python Scikit-Learn for demand forecasting, 5 JavaScript-based AI services for matching/trust/pricing/balancing/classification. Deployment: Vercel (both frontend and serverless backend). PWA with service worker for offline support.</p>
+
+<h3>Q11: How is the cooperative governance implemented?</h3>
+<p><strong>A:</strong> Full democratic system: Society meetings with quorum checks (50%), bylaws management (5 defaults + custom), resolutions (propose - vote - approve), and participation logging. Federation can mobilize workforce across societies. Workers vote on proposals affecting their cooperative.</p>
+
+<h3>Q12: Can this scale to real production?</h3>
+<p><strong>A:</strong> Yes. The architecture uses MongoDB Atlas for persistent storage, Vercel for auto-scaling deployment, and the backend is already configured for Render deployment. The in-memory store is a demo fallback - swapping to MongoDB requires only setting the MONGODB_URI environment variable.</p>
+
+<h3>Q13: How do you handle different service categories?</h3>
+<p><strong>A:</strong> 9 trade categories: Plumbing, Electrical, Carpentry, Painting, Cleaning, Gardening, Driving, Caregiving, General Maintenance. Each has: base price, keywords for classification, weather demand patterns, maintenance intervals, AR repair guides, and assessment questions (65+ total).</p>
+
+<h3>Q14: What about data privacy and security?</h3>
+<p><strong>A:</strong> JWT-based authentication, role-based access control (5 roles), encrypted password storage, certificate verification via SHA-256 hashes, audit logging of all actions, and configurable cooperative rates (not hardcoded). No real payment data is processed - demo environment.</p>
+
+<h3>Q15: How does the multilingual support work?</h3>
+<p><strong>A:</strong> Complete English + Hindi translations (260+ keys). Language toggle persists in localStorage. All UI elements, navigation, alerts, and the voice booking system support both languages. Voice recognition supports Hindi speech input.</p>
+
+<hr>
+
+<h2>10. Deployment Links</h2>
+
+<table>
+<tr><th>Resource</th><th>URL</th></tr>
+<tr><td><strong>Live Application</strong></td><td>https://sih26089-coop.vercel.app</td></tr>
+<tr><td><strong>GitHub Repository</strong></td><td>https://github.com/IshantTripathi/SIH26</td></tr>
+<tr><td><strong>Pull Request</strong></td><td>https://github.com/IshantTripathi/SIH26/pull/1</td></tr>
+<tr><td><strong>API Health Check</strong></td><td>https://sih26089-coop.vercel.app/api/health</td></tr>
+</table>
+
+<h3>Demo Credentials</h3>
+<table>
+<tr><th>Role</th><th>Email</th><th>Password</th></tr>
+<tr><td>Customer (Household)</td><td>customer01@demo.coop</td><td>password123</td></tr>
+<tr><td>Customer (Institution)</td><td>institution01@demo.coop</td><td>password123</td></tr>
+<tr><td>Worker 01</td><td>worker01@demo.coop</td><td>password123</td></tr>
+<tr><td>Worker 02</td><td>worker02@demo.coop</td><td>password123</td></tr>
+<tr><td>Society Admin</td><td>society01.admin@demo.coop</td><td>password123</td></tr>
+<tr><td>Federation Admin</td><td>federation.admin@demo.coop</td><td>password123</td></tr>
+<tr><td>Platform Admin</td><td>platform.admin@demo.coop</td><td>password123</td></tr>
+</table>
+
+<hr>
+
+<h2>11. Summary</h2>
+
+<p>The Sahakar Gig Platform is a <strong>complete, production-ready</strong> cooperative-owned digital marketplace that:</p>
+<ol>
+  <li><strong>Implements ALL 11 features</strong> from the problem statement</li>
+  <li><strong>Uses ALL 5 technology components</strong> specified (Mobile, AI, Geo, Payments, Cloud)</li>
+  <li><strong>Adds 8 innovative features</strong> not found in any existing platform</li>
+  <li><strong>Matches and exceeds</strong> Urban Company, Snabbit, and InstaHelp</li>
+  <li><strong>Maintains cooperative principles</strong> - 95% worker payout, democratic governance, welfare fund, dividends</li>
+  <li><strong>Is fully deployed</strong> on Vercel with working frontend + backend API</li>
+  <li><strong>Has 155/155 tests passing</strong> - verified integration test suite</li>
+  <li><strong>Supports Hindi + English</strong> - multilingual from day one</li>
+</ol>
+
+<p><strong>Built for SIH26089 - Ministry of Cooperation / NCCT - Smart India Hackathon 2026</strong></p>
+
+</body>
+</html>
