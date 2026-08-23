@@ -27,9 +27,9 @@ import { FederationDashboard } from './pages/federation/FederationDashboard';
 import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
 import { VoiceBookingPage } from './pages/customer/VoiceBookingPage';
 import { CommunityImpactPage } from './pages/CommunityImpactPage';
-import { HousehelpPage } from './pages/customer/HousehelpPage';
-import { BeautySpaPage } from './pages/customer/BeautySpaPage';
-import { ManicurePedicurePage } from './pages/customer/ManicurePedicurePage';
+import HousehelpPage from './pages/customer/HousehelpPage';
+import BeautySpaPage from './pages/customer/BeautySpaPage';
+import ManicurePedicurePage from './pages/customer/ManicurePedicurePage';
 import ProfilePage from './pages/customer/ProfilePage';
 
 export function App() {
