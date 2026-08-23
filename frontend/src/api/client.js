@@ -47,6 +47,8 @@ export const api = {
   },
   getJobById: (id) => request(`/jobs/${id}`),
   updateJobStatus: (id, payload) => request(`/jobs/${id}/status`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  getJobWorkerLocation: (id) => request(`/jobs/${id}/location`),
+  updateWorkerLocation: (id, lat, lng) => request(`/jobs/${id}/location`, { method: 'POST', body: JSON.stringify({ lat, lng }) }),
   processPayment: (id, payload) => request(`/jobs/${id}/payment`, { method: 'POST', body: JSON.stringify(payload) }),
   submitRating: (id, payload) => request(`/jobs/${id}/rate`, { method: 'POST', body: JSON.stringify(payload) }),
   cancelJob: (id, payload = {}) => request(`/jobs/${id}/cancel`, { method: 'POST', body: JSON.stringify(payload) }),

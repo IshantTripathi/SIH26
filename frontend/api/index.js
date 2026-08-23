@@ -161,6 +161,18 @@ app.post('/api/auth/google', (req,res) => {
   }
 });
 
+// Register
+app.post('/api/auth/register', (req,res) => {
+  const { name, email, password, mobile, role='customer', customerType='Household' } = req.body;
+  if (!name || !email || !password) return res.status(400).json({ success:false, message:'Name, email and password required.' });
+  const existing = store.findOne('users', { email });
+  if (existing) return res.status(400).json({ success:false, message:'Email already registered.' });
+  const user = store.create('users', { id:`USR-${Date.now()}`, name, email, password, mobile:mobile||'', role, customerType, location:{lat:28.6140,lng:77.2095}, address:'Delhi NCR' });
+  const token = jwt.sign({ id:user.id, role:user.role }, JWT_SECRET, { expiresIn:'24h' });
+  const { password:_, ...safe } = user;
+  return res.json({ success:true, token, user:safe });
+});
+
 app.get('/api/auth/demo-accounts', (req,res) => res.json({ success:true, accounts:store.getCollection('users').map(u=>{const{password:_,...s}=u;return s;}) }));
 app.get('/api/auth/profile', authenticate, (req,res) => { const{password:_,...s}=req.user; return res.json({ success:true, user:s }); });
 app.post('/api/auth/reset-demo', (req,res) => { store.reset(); return res.json({ success:true, message:'Demo data reset.' }); });
@@ -227,6 +239,21 @@ app.patch('/api/jobs/:id/status', authenticate, (req,res) => {
   const updated=store.findByIdAndUpdate('jobs',req.params.id,u);
   store.logAudit({actorName:req.user.name,actorRole:req.user.role,action:'JOB_STATUS',module:'Jobs',recordId:req.params.id,details:`Status → ${status}`});
   return res.json({success:true,job:updated});
+});
+
+// Worker live location
+app.post('/api/jobs/:id/location', authenticate, (req,res) => {
+  const {lat,lng}=req.body;
+  const job=store.findById('jobs',req.params.id);
+  if(!job)return res.status(404).json({success:false,message:'Not found.'});
+  store.findByIdAndUpdate('jobs',req.params.id,{workerLocation:{lat:parseFloat(lat),lng:parseFloat(lng),updatedAt:new Date().toISOString()}});
+  return res.json({success:true});
+});
+
+app.get('/api/jobs/:id/location', (req,res) => {
+  const job=store.findById('jobs',req.params.id);
+  if(!job)return res.status(404).json({success:false,message:'Not found.'});
+  return res.json({success:true,location:job.workerLocation||null,workerName:job.workerName||null,workerPhone:job.workerPhone||null});
 });
 
 app.post('/api/jobs/:id/payment', authenticate, (req,res) => {

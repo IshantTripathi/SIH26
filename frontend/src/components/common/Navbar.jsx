@@ -214,6 +214,16 @@ export function Navbar({ onOpenDemoScenarios }) {
                     >
                       💅 Nails
                     </Link>
+                    <Link
+                      to="/customer/profile"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/profile'
+                          ? 'bg-blue-50 text-blue-900 font-semibold'
+                          : 'text-slate-700 hover:text-blue-900 hover:bg-blue-50'
+                      }`}
+                    >
+                      👤 Profile
+                    </Link>
                   </>
                 )}
 
