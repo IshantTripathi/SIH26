@@ -192,35 +192,35 @@ export function LoginPage() {
               <LogIn className="w-4 h-4" />
               {submitting ? 'Authenticating...' : 'Sign In'}
             </button>
-          </form>
 
-          <div className="pt-2 text-center text-xs text-slate-500">
-            Don't have an account?{' '}
-            <Link to="/register" className="text-blue-900 font-bold hover:underline">
-              Create an Account
-            </Link>
-          </div>
+            {/* Divider */}
+            <div className="relative my-4">
+              <div className="absolute inset-0 flex items-center">
+                <div className="w-full border-t border-slate-300"></div>
+              </div>
+              <div className="relative flex justify-center text-[11px]">
+                <span className="px-2 bg-white text-slate-500">OR</span>
+              </div>
+            </div>
 
-          {/* Google Sign-In */}
-          <div className="pt-4 border-t border-slate-200">
-            <p className="text-[11px] text-slate-500 text-center mb-3">Or sign in with Google</p>
+            {/* Google Sign-In Button */}
             {googleLoading && (
-              <div className="text-center text-xs text-blue-600 py-2">
+              <div className="text-center text-xs text-blue-600 py-2 mb-2">
                 <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600 mx-auto mb-2"></div>
                 Authenticating with Google...
               </div>
             )}
-            <div id="google-signin-btn" className="flex justify-center"></div>
             <button
               type="button"
               onClick={() => {
                 if (window.google) {
                   window.google.accounts.id.prompt();
                 } else {
-                  setError('Google Sign-In is loading. Please wait a moment and try again.');
+                  setError('Google Sign-In is loading. Please wait and try again.');
                 }
               }}
-              className="w-full mt-3 bg-white border-2 border-slate-300 hover:border-blue-500 text-slate-700 py-2.5 rounded-lg font-bold text-xs shadow-sm flex items-center justify-center gap-2 transition-colors"
+              disabled={googleLoading}
+              className="w-full bg-white border-2 border-slate-300 hover:border-blue-500 hover:bg-blue-50 text-slate-700 py-3 rounded-lg font-bold text-sm shadow-sm flex items-center justify-center gap-3 transition-all disabled:opacity-50"
             >
               <svg className="w-5 h-5" viewBox="0 0 24 24">
                 <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -230,6 +230,14 @@ export function LoginPage() {
               </svg>
               {googleLoading ? 'Signing in...' : 'Sign in with Google'}
             </button>
+            <p className="text-[10px] text-slate-400 text-center mt-2">Use your Gmail account to sign in</p>
+          </form>
+
+          <div className="pt-2 text-center text-xs text-slate-500">
+            Don't have an account?{' '}
+            <Link to="/register" className="text-blue-900 font-bold hover:underline">
+              Create an Account
+            </Link>
           </div>
         </div>
 
