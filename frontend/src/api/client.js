@@ -147,6 +147,36 @@ export const api = {
   // Seasonal Suggestions
   getSeasonalSuggestions: () => request('/seasonal'),
 
+  // Effort-Based Pricing Calculator
+  calculateEffortPrice: (payload) => request('/pricing/calculate', { method: 'POST', body: JSON.stringify(payload) }),
+  getTradeDefaults: () => request('/pricing/trade-defaults'),
+
+  // Trust & Rating System
+  getWorkerTrustScore: (id) => request(`/trust/worker/${id}`),
+  getCustomerTrustScore: (id) => request(`/trust/customer/${id}`),
+  getTrustBadge: (score) => request(`/trust/badge/${score}`),
+
+  // AI Skill-to-Job Matching
+  matchWorkers: (payload) => request('/matching/match', { method: 'POST', body: JSON.stringify(payload) }),
+  explainMatch: (payload) => request('/matching/explain', { method: 'POST', body: JSON.stringify(payload) }),
+
+  // Workload Balancing
+  analyzeWorkload: (societyId) => request(`/workload/analyze/${societyId}`),
+  redistributeWorkload: () => request('/workload/redistribute', { method: 'POST' }),
+  getWorkloadHeatmap: () => request('/workload/heatmap'),
+
+  // Cooperative Governance
+  createGovernanceMeeting: (payload) => request('/governance/meetings', { method: 'POST', body: JSON.stringify(payload) }),
+  getGovernanceMeetings: () => request('/governance/meetings'),
+  recordMeetingAttendance: (id, payload) => request(`/governance/meetings/${id}/attendance`, { method: 'POST', body: JSON.stringify(payload) }),
+  updateMeetingMinutes: (id, payload) => request(`/governance/meetings/${id}/minutes`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  getGovernanceBylaws: () => request('/governance/bylaws'),
+  createGovernanceBylaw: (payload) => request('/governance/bylaws', { method: 'POST', body: JSON.stringify(payload) }),
+  createGovernanceResolution: (payload) => request('/governance/resolutions', { method: 'POST', body: JSON.stringify(payload) }),
+  getGovernanceResolutions: () => request('/governance/resolutions'),
+  voteGovernanceResolution: (id, vote) => request(`/governance/resolutions/${id}/vote`, { method: 'POST', body: JSON.stringify({ vote }) }),
+  getGovernanceParticipation: () => request('/governance/participation'),
+
   // Emergency Queue
   broadcastEmergency: (payload) => request('/emergency/broadcast', { method: 'POST', body: JSON.stringify(payload) }),
   acceptEmergency: (id) => request(`/emergency/${id}/accept`, { method: 'POST' }),

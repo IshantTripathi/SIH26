@@ -395,6 +395,149 @@ async function runVerification() {
       console.log('  ⚠ SKIP: Application review (assessment may have failed, which is expected if answers are wrong)');
     }
 
+    // 26. Effort-Based Fair Payout Calculator
+    console.log('\n[26/33] Verifying Effort-Based Fair Payout Calculator...');
+    const priceCalcRes = await makeRequest('/pricing/calculate', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ serviceCategory: 'Plumbing', durationHours: 2, urgency: 'High', scheduledTime: '20:00', subTasks: ['Leak detection', 'Pipe replacement'] })
+    });
+    assert(priceCalcRes.data.success === true, 'Effort pricing calculator works');
+    assert(priceCalcRes.data.pricing.grossAmount > 0, 'Gross amount computed');
+    assert(priceCalcRes.data.pricing.breakdown.effortMultiplier > 1, 'Effort multiplier applied (>1.0)');
+    assert(priceCalcRes.data.pricing.breakdown.urgency.surcharge > 0, 'Urgency surcharge included');
+    assert(priceCalcRes.data.pricing.breakdown.subTasks.count === 2, 'Sub-task fee counted');
+    assert(priceCalcRes.data.pricing.netWorkerEarnings > 0, 'Net worker payout computed');
+    assert(priceCalcRes.data.cooperativeSplit, 'Cooperative split returned');
+
+    const tradeDefaultsRes = await makeRequest('/pricing/trade-defaults', { token: custToken });
+    assert(tradeDefaultsRes.data.success === true, 'Trade defaults endpoint works');
+    assert(tradeDefaultsRes.data.defaults['Plumbing'], 'Plumbing defaults present');
+
+    // 27. Two-Sided Trust & Rating System
+    console.log('\n[27/33] Verifying Two-Sided Trust & Rating System...');
+    const workerTrustRes = await makeRequest('/trust/worker/WORKER-DEMO-001', { token: custToken });
+    assert(workerTrustRes.data.success === true, 'Worker trust score computed');
+    assert(typeof workerTrustRes.data.trust.trustScore === 'number', 'Trust score is numeric');
+    assert(workerTrustRes.data.trust.trustScore >= 0 && workerTrustRes.data.trust.trustScore <= 100, 'Trust score in 0-100 range');
+    assert(workerTrustRes.data.trust.tier, 'Trust tier assigned');
+    assert(workerTrustRes.data.trust.badge, 'Trust badge assigned');
+    assert(workerTrustRes.data.trust.dimensions, 'Trust dimensions breakdown present');
+
+    const customerTrustRes = await makeRequest('/trust/customer/USR-CUST-001', { token: custToken });
+    assert(customerTrustRes.data.success === true, 'Customer trust score computed');
+    assert(customerTrustRes.data.trust.trustScore >= 0, 'Customer trust score valid');
+
+    const badgeRes = await makeRequest('/trust/badge/85', { token: custToken });
+    assert(badgeRes.data.success === true, 'Trust badge endpoint works');
+    assert(badgeRes.data.badge.label, 'Badge label present');
+
+    // 28. AI Skill-to-Job Matching
+    console.log('\n[28/33] Verifying AI Skill-to-Job Matching...');
+    const matchRes = await makeRequest('/matching/match', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ serviceCategory: 'Plumbing', urgency: 'Normal' })
+    });
+    assert(matchRes.data.success === true, 'Skill matching endpoint works');
+    assert(typeof matchRes.data.totalCandidates === 'number', 'Candidate count returned');
+    assert(matchRes.data.topMatches.length >= 0, 'Top matches array returned');
+    assert(matchRes.data.matchQuality, 'Match quality level returned');
+    assert(matchRes.data.skillGraph, 'Skill graph with related trades returned');
+    assert(matchRes.data.skillGraph.requested === 'Plumbing', 'Requested skill in graph');
+
+    // 29. Active Workload Balancing
+    console.log('\n[29/33] Verifying Active Workload Balancing...');
+    const workloadRes = await makeRequest('/workload/analyze/SOC-DEMO-001', { token: workerToken });
+    assert(workloadRes.data.success === true, 'Workload analysis works');
+    assert(typeof workloadRes.data.analysis.totalWorkers === 'number', 'Total workers counted');
+    assert(typeof workloadRes.data.analysis.avgWorkload === 'number', 'Average workload computed');
+    assert(typeof workloadRes.data.analysis.imbalanceScore === 'number', 'Imbalance score computed');
+    assert(workloadRes.data.analysis.caps, 'Workload caps defined');
+
+    const redistributeRes = await makeRequest('/workload/redistribute', { method: 'POST', token: workerToken });
+    assert(redistributeRes.data.success === true, 'Workload redistribution endpoint works');
+
+    const heatmapRes = await makeRequest('/workload/heatmap', { token: workerToken });
+    assert(heatmapRes.data.success === true, 'Workload heatmap works');
+    assert(Array.isArray(heatmapRes.data.heatmap), 'Heatmap is array');
+    assert(heatmapRes.data.heatmap.length >= 1, 'At least 1 society in heatmap');
+
+    // 30. Transparent Price Breakdown (effort calculator in action)
+    console.log('\n[30/33] Verifying Transparent Price Breakdown...');
+    const breakdownRes = await makeRequest('/pricing/calculate', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ serviceCategory: 'Electrical', durationHours: 1, urgency: 'Normal', complexity: 'complex', physicalDemand: 'medium', skillDifficulty: 'advanced' })
+    });
+    assert(breakdownRes.data.success === true, 'Price breakdown computed');
+    assert(breakdownRes.data.pricing.breakdown.complexity.level === 'complex', 'Complexity level tracked');
+    assert(breakdownRes.data.pricing.breakdown.skillDifficulty.level === 'advanced', 'Skill difficulty tracked');
+    assert(breakdownRes.data.pricing.breakdown.serviceAmount > 0, 'Service amount in breakdown');
+
+    // 31. Travel & Waiting Time Compensation
+    console.log('\n[31/33] Verifying Travel & Waiting Time Compensation...');
+    const travelRes = await makeRequest('/pricing/calculate', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({
+        serviceCategory: 'Plumbing', durationHours: 1, urgency: 'Normal',
+        customerLocation: { lat: 28.6140, lng: 77.2095 },
+        workerLocation: { lat: 28.6500, lng: 77.2500 },
+        waitingMinutes: 30
+      })
+    });
+    assert(travelRes.data.success === true, 'Travel pricing works');
+    assert(travelRes.data.pricing.breakdown.travel.distanceKm > 0, 'Travel distance computed');
+    assert(travelRes.data.pricing.breakdown.travel.compensation >= 0, 'Travel compensation computed');
+    assert(travelRes.data.pricing.breakdown.waiting.totalMinutes === 30, 'Waiting minutes tracked');
+    assert(travelRes.data.pricing.breakdown.waiting.compensation >= 0, 'Waiting compensation computed');
+
+    // 32. Cooperative Governance System
+    console.log('\n[32/33] Verifying Cooperative Governance System...');
+    const societyToken3 = (await makeRequest('/auth/login', { method: 'POST', body: JSON.stringify({ email: 'society01.admin@demo.coop', password: 'password123' }) })).data.token;
+
+    const meetingRes = await makeRequest('/governance/meetings', {
+      method: 'POST', token: societyToken3,
+      body: JSON.stringify({ title: 'Q3 2026 General Body Meeting', description: 'Review quarterly performance and budget', scheduledDate: '2026-09-15', scheduledTime: '10:00', location: 'Society Hall' })
+    });
+    assert(meetingRes.data.success === true, 'Meeting scheduled');
+    assert(meetingRes.data.meeting.id, 'Meeting ID assigned');
+    assert(meetingRes.data.meeting.quorumRequired === 0.5, 'Quorum check present (50%)');
+
+    const meetingsListRes = await makeRequest('/governance/meetings', { token: societyToken3 });
+    assert(meetingsListRes.data.success === true, 'Meetings list works');
+    assert(meetingsListRes.data.meetings.length >= 1, 'At least 1 meeting listed');
+
+    const bylawsRes = await makeRequest('/governance/bylaws', { token: societyToken3 });
+    assert(bylawsRes.data.success === true, 'Bylaws endpoint works');
+    assert(bylawsRes.data.bylaws.length >= 5, 'Default bylaws seeded (5+)');
+
+    const resolutionRes = await makeRequest('/governance/resolutions', {
+      method: 'POST', token: societyToken3,
+      body: JSON.stringify({ title: 'Increase tool inventory budget', description: 'Allocate 10000 for new power tools', societyId: 'SOC-DEMO-001' })
+    });
+    assert(resolutionRes.data.success === true, 'Resolution created');
+    assert(resolutionRes.data.resolution.status === 'Proposed', 'Resolution starts as Proposed');
+
+    const voteRes = await makeRequest(`/governance/resolutions/${resolutionRes.data.resolution.id}/vote`, {
+      method: 'POST', token: societyToken3,
+      body: JSON.stringify({ vote: 'for' })
+    });
+    assert(voteRes.data.success === true, 'Resolution voted on');
+
+    const resolutionsListRes = await makeRequest('/governance/resolutions', { token: societyToken3 });
+    assert(resolutionsListRes.data.success === true, 'Resolutions list works');
+
+    const participationRes = await makeRequest('/governance/participation', { token: societyToken3 });
+    assert(participationRes.data.success === true, 'Participation log works');
+    assert(participationRes.data.summary, 'Participation summary present');
+    assert(typeof participationRes.data.summary.totalMeetings === 'number', 'Meeting count in summary');
+
+    // 33. Worker Utilization & Welfare Dashboard API
+    console.log('\n[33/33] Verifying Worker Utilization & Welfare Dashboard API...');
+    const earningsRes = await makeRequest('/worker/earnings', { token: workerToken });
+    assert(earningsRes.data.success === true, 'Worker earnings endpoint works');
+    assert(typeof earningsRes.data.summary.completedJobsCount === 'number', 'Completed jobs count present');
+    assert(typeof earningsRes.data.summary.grossTotal === 'number', 'Gross total computed');
+    assert(typeof earningsRes.data.summary.netTotal === 'number', 'Net total computed');
+
     console.log('\n====================================================');
     console.log(` TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
     console.log('====================================================');

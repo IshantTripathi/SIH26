@@ -20,7 +20,9 @@ import {
   Home,
   FileText,
   Bell,
-  UserPlus
+  UserPlus,
+  BarChart3,
+  Vote
 } from 'lucide-react';
 
 export function Navbar({ onOpenDemoScenarios }) {
@@ -464,6 +466,9 @@ export function Navbar({ onOpenDemoScenarios }) {
               <Link to="/worker/welfare" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 Welfare & Insurance (Demo)
               </Link>
+              <Link to="/worker/utilization" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-slate-700">
+                <BarChart3 className="w-3.5 h-3.5" /> Utilization Dashboard
+              </Link>
             </div>
           )}
 
@@ -486,6 +491,9 @@ export function Navbar({ onOpenDemoScenarios }) {
               </Link>
               <Link to="/society/complaints" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 Grievance Board
+              </Link>
+              <Link to="/society/governance" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm font-semibold text-emerald-700">
+                <Vote className="w-3.5 h-3.5" /> Governance & Decisions
               </Link>
             </div>
           )}

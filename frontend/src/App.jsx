@@ -15,6 +15,8 @@ import { WorkerDashboard } from './pages/worker/WorkerDashboard';
 import { WorkerEarningsPage } from './pages/worker/WorkerEarningsPage';
 import { WorkerWelfarePage } from './pages/worker/WorkerWelfarePage';
 import { WorkerApplicationPage } from './pages/worker/WorkerApplicationPage';
+import { WorkerUtilizationPage } from './pages/worker/WorkerUtilizationPage';
+import { GovernancePage } from './pages/society/GovernancePage';
 import { SocietyDashboard } from './pages/society/SocietyDashboard';
 import { SocietyWorkersPage } from './pages/society/SocietyWorkersPage';
 import { SocietyComplaintsPage } from './pages/society/SocietyComplaintsPage';
@@ -55,11 +57,13 @@ export function App() {
           <Route path="/worker/earnings" element={<WorkerEarningsPage />} />
           <Route path="/worker/welfare" element={<WorkerWelfarePage />} />
           <Route path="/worker/apply" element={<WorkerApplicationPage />} />
+          <Route path="/worker/utilization" element={<WorkerUtilizationPage />} />
 
           {/* Society Admin Routes */}
           <Route path="/society" element={<SocietyDashboard />} />
           <Route path="/society/workers" element={<SocietyWorkersPage />} />
           <Route path="/society/complaints" element={<SocietyComplaintsPage />} />
+          <Route path="/society/governance" element={<GovernancePage />} />
 
           {/* Federation Admin Routes */}
           <Route path="/federation" element={<FederationDashboard />} />

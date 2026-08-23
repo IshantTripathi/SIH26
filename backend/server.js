@@ -16,6 +16,11 @@ import auditRoutes from './src/routes/auditRoutes.js';
 import loyaltyRoutes from './src/routes/loyaltyRoutes.js';
 import emergencyRoutes from './src/routes/emergencyRoutes.js';
 import applicationRoutes from './src/routes/applicationRoutes.js';
+import pricingRoutes from './src/routes/pricingRoutes.js';
+import trustRoutes from './src/routes/trustRoutes.js';
+import matchingRoutes from './src/routes/matchingRoutes.js';
+import workloadRoutes from './src/routes/workloadRoutes.js';
+import governanceRoutes from './src/routes/governanceRoutes.js';
 
 dotenv.config();
 
@@ -60,6 +65,11 @@ app.use('/api/system', auditRoutes);
 app.use('/api', loyaltyRoutes);
 app.use('/api/emergency', emergencyRoutes);
 app.use('/api/onboarding', applicationRoutes);
+app.use('/api/pricing', pricingRoutes);
+app.use('/api/trust', trustRoutes);
+app.use('/api/matching', matchingRoutes);
+app.use('/api/workload', workloadRoutes);
+app.use('/api/governance', governanceRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
