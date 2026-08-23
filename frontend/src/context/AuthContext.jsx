@@ -92,6 +92,23 @@ export function AuthProvider({ children }) {
     setLinkedProfile(null);
   };
 
+  const googleLogin = async (googleToken) => {
+    try {
+      const res = await api.googleLogin(googleToken);
+      if (res.success) {
+        localStorage.setItem('coop_token', res.token);
+        localStorage.setItem('coop_demo_user_id', res.user.id);
+        setToken(res.token);
+        setUser(res.user);
+        setLinkedProfile(res.linkedProfile);
+        return { success: true, user: res.user };
+      }
+      return { success: false, message: res.message };
+    } catch (err) {
+      return { success: false, message: err.message || 'Google login failed' };
+    }
+  };
+
   const resetAllData = async () => {
     try {
       await api.resetDemoData();
@@ -120,6 +137,7 @@ export function AuthProvider({ children }) {
         register,
         logout,
         quickSwitchRole,
+        googleLogin,
         resetAllData,
         isAuthenticated: !!user
       }}

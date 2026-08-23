@@ -122,6 +122,45 @@ app.post('/api/auth/login', (req,res) => {
   const { password:_, ...safe } = user;
   return res.json({ success:true, token, user:safe });
 });
+
+// Google OAuth Login
+app.post('/api/auth/google', (req,res) => {
+  const { token } = req.body;
+  if (!token) return res.status(400).json({ success:false, message:'Google token required.' });
+
+  try {
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    const email = payload.email;
+    const name = payload.name || payload.given_name || 'Google User';
+    const picture = payload.picture || '';
+    const googleId = payload.sub;
+
+    let user = store.findOne('users', { email });
+    if (!user) {
+      user = store.create('users', {
+        id: `USR-GOOGLE-${Date.now()}`,
+        name,
+        email,
+        password: 'google-oauth-no-password',
+        role: 'customer',
+        mobile: '',
+        location: { lat: 28.6140, lng: 77.2095 },
+        address: 'Google Account',
+        customerType: 'Household',
+        authProvider: 'google',
+        googleId,
+        picture
+      });
+    }
+
+    const jwtToken = jwt.sign({ id:user.id, role:user.role }, JWT_SECRET, { expiresIn:'24h' });
+    const { password:_, ...safe } = user;
+    return res.json({ success:true, token:jwtToken, user:safe });
+  } catch(e) {
+    return res.status(401).json({ success:false, message:'Invalid Google token.' });
+  }
+});
+
 app.get('/api/auth/demo-accounts', (req,res) => res.json({ success:true, accounts:store.getCollection('users').map(u=>{const{password:_,...s}=u;return s;}) }));
 app.get('/api/auth/profile', authenticate, (req,res) => { const{password:_,...s}=req.user; return res.json({ success:true, user:s }); });
 app.post('/api/auth/reset-demo', (req,res) => { store.reset(); return res.json({ success:true, message:'Demo data reset.' }); });
