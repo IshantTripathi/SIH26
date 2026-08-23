@@ -691,6 +691,46 @@ export function CustomerDashboard() {
                 </div>
               </div>
 
+              {urgency === 'Emergency' && (
+                <div className="p-3 bg-red-50 border-2 border-red-300 rounded-xl space-y-2">
+                  <div className="flex items-center gap-2 text-red-800 font-bold text-xs">
+                    <AlertTriangle className="w-4 h-4" />
+                    EMERGENCY PRIORITY BROADCAST
+                  </div>
+                  <p className="text-[11px] text-red-700">
+                    Your request will be broadcast to ALL nearby eligible workers simultaneously.
+                    The first worker to accept within 60 seconds will be assigned. Auto-escalates to society admin if no response.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={async () => {
+                      setSubmittingJob(true);
+                      try {
+                        const res = await api.broadcastEmergency({
+                          serviceCategory: detectedCategory || 'General Maintenance',
+                          problemDescription: problemDescription || 'Emergency service needed',
+                          customerLocation: user?.location || { lat: 28.6140, lng: 77.2095 },
+                          customerAddress
+                        });
+                        if (res.success) {
+                          setBookingSuccess(`EMERGENCY BROADCAST sent to ${res.emergency?.broadcastCount || 0} workers. Waiting for acceptance...`);
+                        } else {
+                          setBookingError(res.message);
+                        }
+                      } catch (err) {
+                        setBookingError(err.message);
+                      }
+                      setSubmittingJob(false);
+                    }}
+                    disabled={submittingJob || !detectedCategory}
+                    className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-lg animate-pulse"
+                  >
+                    <AlertTriangle className="w-4 h-4" />
+                    {submittingJob ? 'Broadcasting...' : 'BROADCAST EMERGENCY TO ALL NEARBY WORKERS'}
+                  </button>
+                </div>
+              )}
+
               {/* Duration Picker (1-4hr) + Pack Credit */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>

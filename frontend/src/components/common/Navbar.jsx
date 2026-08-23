@@ -19,7 +19,8 @@ import {
   Languages,
   Home,
   FileText,
-  Bell
+  Bell,
+  UserPlus
 } from 'lucide-react';
 
 export function Navbar({ onOpenDemoScenarios }) {
@@ -462,6 +463,15 @@ export function Navbar({ onOpenDemoScenarios }) {
               </Link>
               <Link to="/worker/welfare" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 Welfare & Insurance (Demo)
+              </Link>
+            </div>
+          )}
+
+          {!user && (
+            <div className="space-y-1">
+              <Link to="/worker/apply" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-1.5 text-sm font-semibold text-emerald-700">
+                <UserPlus className="w-4 h-4" />
+                Apply as Cooperative Worker
               </Link>
             </div>
           )}

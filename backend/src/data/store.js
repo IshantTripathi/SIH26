@@ -59,6 +59,10 @@ class DataStore {
     ];
     this.callbacks = [];
     this.issueTracking = [];
+    this.emergencyQueue = [];
+    this.workerLocations = {};
+    this.workerApplications = [];
+    this.skillAssessments = [];
     this.seasonalSuggestions = [
       { season: 'Summer', months: [3,4,5], services: ['AC Servicing', 'Appliance Repair', 'Electrical'], message: 'Get your AC serviced before summer peak — book now for priority slots!', icon: 'Sun' },
       { season: 'Monsoon', months: [6,7,8,9], services: ['Plumbing', 'Waterproofing', 'Pest Control'], message: 'Monsoon ready? Check pipes, waterproofing & pest control.', icon: 'CloudRain' },

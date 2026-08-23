@@ -321,6 +321,80 @@ async function runVerification() {
     assert(warrantyClaimRes.data.newJob.pricing.grossAmount === 0, 'Re-service is free (₹0)');
     assert(warrantyClaimRes.data.newJob.isWarrantyClaim === true, 'Job marked as warranty claim');
 
+    // 22. Emergency Priority Queue
+    console.log('\n[22/25] Verifying Emergency Priority Queue...');
+    const emergencyPoolRes = await makeRequest('/emergency/pool?category=Plumbing', { token: workerToken });
+    assert(emergencyPoolRes.data.success === true, 'Emergency pool endpoint works');
+    assert(typeof emergencyPoolRes.data.count === 'number', 'Pool returns worker count');
+
+    const emergencyBroadcastRes = await makeRequest('/emergency/broadcast', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ serviceCategory: 'Plumbing', problemDescription: 'Burst pipe emergency', customerAddress: '123 Emergency Street' })
+    });
+    assert(emergencyBroadcastRes.data.success === true, 'Emergency broadcast sent');
+    assert(emergencyBroadcastRes.data.emergency.broadcastCount >= 0, 'Broadcast count returned');
+    assert(emergencyBroadcastRes.data.emergency.expiresAt, 'Expiry timestamp set');
+
+    const activeEmergRes = await makeRequest('/emergency/active', { token: custToken });
+    assert(activeEmergRes.data.success === true, 'Active emergencies endpoint works');
+
+    // 23. Worker GPS Location Tracking
+    console.log('\n[23/25] Verifying Worker GPS Location Tracking...');
+    const locationUpdateRes = await makeRequest('/worker/location', {
+      method: 'PATCH', token: workerToken,
+      body: JSON.stringify({ lat: 28.6155, lng: 77.2120, jobId: 'test-job' })
+    });
+    assert(locationUpdateRes.data.success === true, 'Worker location updated');
+
+    const workerLocRes = await makeRequest('/worker/location/WORKER-DEMO-001', { token: workerToken });
+    assert(workerLocRes.data.success === true, 'Worker location retrieved');
+    assert(workerLocRes.data.location.lat, 'Location has latitude');
+
+    // 24. Worker Application & Skill Assessment
+    console.log('\n[24/25] Verifying Worker Application & Skill Assessment...');
+    const applyRes = await makeRequest('/onboarding/apply', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ fullName: 'Test Applicant', mobile: '9999900000', primarySkill: 'Plumbing', experienceYears: 3, societyId: 'SOC-DEMO-001' })
+    });
+    assert(applyRes.data.success === true, 'Worker application submitted');
+    const newAppId = applyRes.data.application.id;
+
+    const questionsRes = await makeRequest('/onboarding/assessment/Plumbing', { token: custToken });
+    assert(questionsRes.data.success === true, 'Assessment questions retrieved');
+    assert(questionsRes.data.totalQuestions === 10, '10 questions returned for Plumbing');
+    assert(!questionsRes.data.questions[0].correctIndex, 'Correct answer not exposed to applicant');
+
+    const testAnswers = [1, 3, 1, 2, 1, 1, 1, 1, 1, 2];
+    const assessRes = await makeRequest('/onboarding/assessment/submit', {
+      method: 'POST', token: custToken,
+      body: JSON.stringify({ applicationId: newAppId, trade: 'Plumbing', answers: testAnswers })
+    });
+    assert(assessRes.data.success === true, 'Assessment submitted');
+    assert(typeof assessRes.data.result.score === 'number', 'Score returned');
+    assert(typeof assessRes.data.result.passed === 'boolean', 'Pass/fail status returned');
+
+    const myAppsRes = await makeRequest('/onboarding/my-applications', { token: custToken });
+    assert(myAppsRes.data.success === true, 'My applications endpoint works');
+    assert(myAppsRes.data.applications.length >= 1, 'At least 1 application listed');
+
+    // 25. Society Review Application (approve worker)
+    console.log('\n[25/25] Verifying Society Application Review...');
+    const societyToken2 = (await makeRequest('/auth/login', { method: 'POST', body: JSON.stringify({ email: 'society01.admin@demo.coop', password: 'password123' }) })).data.token;
+    const pendingAppsRes = await makeRequest('/onboarding/pending', { token: societyToken2 });
+    assert(pendingAppsRes.data.success === true, 'Pending applications fetched');
+
+    if (assessRes.data.result.passed && pendingAppsRes.data.applications.length > 0) {
+      const reviewRes = await makeRequest(`/onboarding/${newAppId}/review`, {
+        method: 'PATCH', token: societyToken2,
+        body: JSON.stringify({ decision: 'APPROVE', notes: 'Strong assessment performance' })
+      });
+      assert(reviewRes.data.success === true, 'Application approved by society');
+      assert(reviewRes.data.worker.id, 'New worker ID assigned');
+      assert(reviewRes.data.worker.certCode, 'Certification code issued');
+    } else {
+      console.log('  ⚠ SKIP: Application review (assessment may have failed, which is expected if answers are wrong)');
+    }
+
     console.log('\n====================================================');
     console.log(` TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
     console.log('====================================================');

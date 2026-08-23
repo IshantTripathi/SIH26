@@ -69,6 +69,9 @@ export const api = {
   getWorkerProfile: (id) => request(id ? `/worker/profile/${id}` : '/worker/profile'),
   updateWorkerStatus: (payload) => request('/worker/status', { method: 'PATCH', body: JSON.stringify(payload) }),
   getWorkerEarnings: (id) => request(id ? `/worker/earnings/${id}` : '/worker/earnings'),
+  updateWorkerLocation: (payload) => request('/worker/location', { method: 'PATCH', body: JSON.stringify(payload) }),
+  getWorkerLocation: (workerId) => request(`/worker/location/${workerId}`),
+  getJobWorkerLocation: (jobId) => request(`/worker/location/job/${jobId}`),
 
   // Society Admin
   getSocietyDashboard: (id) => request(id ? `/society/dashboard/${id}` : '/society/dashboard'),
@@ -142,5 +145,22 @@ export const api = {
   scheduleCallback: (payload) => request('/callbacks', { method: 'POST', body: JSON.stringify(payload) }),
 
   // Seasonal Suggestions
-  getSeasonalSuggestions: () => request('/seasonal')
+  getSeasonalSuggestions: () => request('/seasonal'),
+
+  // Emergency Queue
+  broadcastEmergency: (payload) => request('/emergency/broadcast', { method: 'POST', body: JSON.stringify(payload) }),
+  acceptEmergency: (id) => request(`/emergency/${id}/accept`, { method: 'POST' }),
+  getEmergencyPool: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/emergency/pool${query ? `?${query}` : ''}`);
+  },
+  getActiveEmergencies: () => request('/emergency/active'),
+
+  // Worker Onboarding & Assessment
+  submitApplication: (payload) => request('/onboarding/apply', { method: 'POST', body: JSON.stringify(payload) }),
+  getAssessmentQuestions: (trade) => request(`/onboarding/assessment/${encodeURIComponent(trade)}`),
+  submitAssessment: (payload) => request('/onboarding/assessment/submit', { method: 'POST', body: JSON.stringify(payload) }),
+  getPendingApplications: (societyId) => request(societyId ? `/onboarding/pending/${societyId}` : '/onboarding/pending'),
+  reviewApplication: (id, payload) => request(`/onboarding/${id}/review`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  getMyApplications: () => request('/onboarding/my-applications')
 };

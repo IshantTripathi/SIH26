@@ -108,7 +108,25 @@ export const translations = {
     'federation.demandForecast': 'Predicted Service Demand',
     'federation.potentialShortage': 'Workforce Shortage / Deficit',
     'federation.reallocateAdvice': 'Actionable Reallocation Recommendation',
-    'federation.geoCoverage': 'Geo-Spatial Coverage & Heatmap'
+    'federation.geoCoverage': 'Geo-Spatial Coverage & Heatmap',
+
+    // Emergency Queue
+    'emergency.broadcast': 'EMERGENCY BROADCAST',
+    'emergency.pool': 'Eligible Emergency Pool',
+    'emergency.accept': 'Accept Emergency Job',
+    'emergency.escalating': 'Auto-escalates in 60 seconds',
+
+    // Worker Onboarding
+    'onboarding.apply': 'Apply as Cooperative Worker',
+    'onboarding.assessment': 'Skill Assessment',
+    'onboarding.pending': 'Pending Applications',
+    'onboarding.review': 'Review Application',
+    'onboarding.passed': 'Assessment Passed',
+    'onboarding.failed': 'Assessment Failed',
+
+    // GPS Tracking
+    'gps.active': 'LIVE GPS TRACKING ACTIVE',
+    'gps.workerLocation': 'Worker Live Location'
   },
   hi: {
     // Navigation & Common
@@ -219,6 +237,24 @@ export const translations = {
     'federation.demandForecast': 'अनुमानित सेवा मांग',
     'federation.potentialShortage': 'कार्यबल की संभावित कमी',
     'federation.reallocateAdvice': 'पुनरावंटन अनुशंसा',
-    'federation.geoCoverage': 'भू-स्थानिक कवरेज एवं हीटमैप'
+    'federation.geoCoverage': 'भू-स्थानिक कवरेज एवं हीटमैप',
+
+    // Emergency Queue
+    'emergency.broadcast': 'आपातकालीन प्रसारण',
+    'emergency.pool': 'पात्र आपातकालीन पूल',
+    'emergency.accept': 'आपातकालीन कार्य स्वीकार करें',
+    'emergency.escalating': '60 सेकंड में स्वतः पुनर्निर्देश',
+
+    // Worker Onboarding
+    'onboarding.apply': 'सहकारी श्रमिक के रूप में आवेदन करें',
+    'onboarding.assessment': 'कौशल मूल्यांकन',
+    'onboarding.pending': 'लंबित आवेदन',
+    'onboarding.review': 'आवेदन की समीक्षा',
+    'onboarding.passed': 'मूल्यांकन उत्तीर्ण',
+    'onboarding.failed': 'मूल्यांकन अनुत्तीर्ण',
+
+    // GPS Tracking
+    'gps.active': 'लाइव जीपीएस ट्रैकिंग सक्रिय',
+    'gps.workerLocation': 'श्रमिक लाइव स्थान'
   }
 };

@@ -14,6 +14,8 @@ import welfareRoutes from './src/routes/welfareRoutes.js';
 import complaintRoutes from './src/routes/complaintRoutes.js';
 import auditRoutes from './src/routes/auditRoutes.js';
 import loyaltyRoutes from './src/routes/loyaltyRoutes.js';
+import emergencyRoutes from './src/routes/emergencyRoutes.js';
+import applicationRoutes from './src/routes/applicationRoutes.js';
 
 dotenv.config();
 
@@ -56,6 +58,8 @@ app.use('/api/welfare', welfareRoutes);
 app.use('/api/complaints', complaintRoutes);
 app.use('/api/system', auditRoutes);
 app.use('/api', loyaltyRoutes);
+app.use('/api/emergency', emergencyRoutes);
+app.use('/api/onboarding', applicationRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

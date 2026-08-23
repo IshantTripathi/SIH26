@@ -14,6 +14,7 @@ import { BookingHistoryPage } from './pages/customer/BookingHistoryPage';
 import { WorkerDashboard } from './pages/worker/WorkerDashboard';
 import { WorkerEarningsPage } from './pages/worker/WorkerEarningsPage';
 import { WorkerWelfarePage } from './pages/worker/WorkerWelfarePage';
+import { WorkerApplicationPage } from './pages/worker/WorkerApplicationPage';
 import { SocietyDashboard } from './pages/society/SocietyDashboard';
 import { SocietyWorkersPage } from './pages/society/SocietyWorkersPage';
 import { SocietyComplaintsPage } from './pages/society/SocietyComplaintsPage';
@@ -53,6 +54,7 @@ export function App() {
           <Route path="/worker" element={<WorkerDashboard />} />
           <Route path="/worker/earnings" element={<WorkerEarningsPage />} />
           <Route path="/worker/welfare" element={<WorkerWelfarePage />} />
+          <Route path="/worker/apply" element={<WorkerApplicationPage />} />
 
           {/* Society Admin Routes */}
           <Route path="/society" element={<SocietyDashboard />} />

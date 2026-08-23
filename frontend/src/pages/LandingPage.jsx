@@ -318,6 +318,26 @@ export function LandingPage({ onOpenDemoScenarios }) {
           ))}
         </div>
       </section>
+
+      {/* Worker Onboarding CTA */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-bold text-emerald-900 flex items-center gap-2">
+              🛠️ {t('onboarding.apply', 'Apply as a Verified Cooperative Worker')}
+            </h3>
+            <p className="text-xs text-emerald-700 mt-1">
+              Join the cooperative workforce. Complete a skill assessment and get society-verified certification.
+            </p>
+          </div>
+          <Link
+            to="/worker/apply"
+            className="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shadow-sm"
+          >
+            Apply Now <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
+        </div>
+      </section>
     </div>
   );
 }
