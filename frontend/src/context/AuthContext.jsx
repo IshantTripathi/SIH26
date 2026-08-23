@@ -32,7 +32,7 @@ export function AuthProvider({ children }) {
 
   const login = async (identifier, password) => {
     try {
-      const res = await api.login({ identifier, password });
+      const res = await api.login({ email: identifier, password });
       if (res.success) {
         localStorage.setItem('coop_token', res.token);
         localStorage.setItem('coop_demo_user_id', res.user.id);
@@ -50,7 +50,7 @@ export function AuthProvider({ children }) {
   const quickSwitchRole = async (email) => {
     setLoading(true);
     try {
-      const res = await api.login({ identifier: email, password: 'password123' });
+      const res = await api.login({ email: email, password: 'password123' });
       if (res.success) {
         localStorage.setItem('coop_token', res.token);
         localStorage.setItem('coop_demo_user_id', res.user.id);

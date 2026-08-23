@@ -31,7 +31,7 @@ async function request(endpoint, options = {}) {
 
 export const api = {
   // Auth & Demo
-  login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify({ email: credentials.identifier || credentials.email, password: credentials.password }) }),
   register: (userData) => request('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   getProfile: () => request('/auth/profile'),
   getDemoAccounts: () => request('/auth/demo-accounts'),
