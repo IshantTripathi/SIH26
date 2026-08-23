@@ -126,7 +126,25 @@ export const translations = {
 
     // GPS Tracking
     'gps.active': 'LIVE GPS TRACKING ACTIVE',
-    'gps.workerLocation': 'Worker Live Location'
+    'gps.workerLocation': 'Worker Live Location',
+
+    // Innovation Features
+    'voice.title': 'Voice Booking Assistant',
+    'voice.subtitle': 'Book services by speaking in Hindi or English',
+    'passport.title': 'Digital Skill Passport',
+    'passport.subtitle': 'Portable verifiable worker credential',
+    'wellness.title': 'Worker Wellness Dashboard',
+    'wellness.subtitle': 'Health, rest & fair wage monitoring',
+    'dividend.title': 'Cooperative Dividend Calculator',
+    'dividend.subtitle': 'Your real-time dividend projection',
+    'impact.title': 'Community Impact Dashboard',
+    'impact.subtitle': 'Social impact metrics for Ministry of Cooperation',
+    'predictive.title': 'Predictive Maintenance Alerts',
+    'predictive.subtitle': 'Proactive equipment maintenance for institutions',
+    'scheduling.title': 'Smart Scheduling',
+    'scheduling.subtitle': 'Weather & festival-aware booking suggestions',
+    'ar.title': 'AR Repair Guidance',
+    'ar.subtitle': 'Step-by-step visual repair guides for workers'
   },
   hi: {
     // Navigation & Common
@@ -255,6 +273,24 @@ export const translations = {
 
     // GPS Tracking
     'gps.active': 'लाइव जीपीएस ट्रैकिंग सक्रिय',
-    'gps.workerLocation': 'श्रमिक लाइव स्थान'
+    'gps.workerLocation': 'श्रमिक लाइव स्थान',
+
+    // Innovation Features
+    'voice.title': 'वॉइस बुकिंग सहायक',
+    'voice.subtitle': 'हिंदी या अंग्रेजी में बोलकर सेवा बुक करें',
+    'passport.title': 'डिजिटल कौशल पासपोर्ट',
+    'passport.subtitle': 'पोर्टेबल सत्यापन योग्य श्रमिक प्रमाणपत्र',
+    'wellness.title': 'श्रमिक कल्याण डैशबोर्ड',
+    'wellness.subtitle': 'स्वास्थ्य, विश्राम और उचित वेतन निगरानी',
+    'dividend.title': 'सहकारी लाभांश कैलकुलेटर',
+    'dividend.subtitle': 'आपकी वास्तविक समय लाभांश परियोजना',
+    'impact.title': 'सामुदायिक प्रभाव डैशबोर्ड',
+    'impact.subtitle': 'सहकारिता मंत्रालय के लिए सामाजिक प्रभाव मापदंड',
+    'predictive.title': 'भविष्यवाणी रखरखाव अलर्ट',
+    'predictive.subtitle': 'संस्थानों के लिए सक्रिय उपकरण रखरखाव',
+    'scheduling.title': 'स्मार्ट शेड्यूलिंग',
+    'scheduling.subtitle': 'मौसम और त्योहार-जागरूक बुकिंग सुझाव',
+    'ar.title': 'एआर मरम्मत मार्गदर्शन',
+    'ar.subtitle': 'श्रमिकों के लिए चरण-दर-चरण दृश्य मरम्मत मार्गदर्शिकाएँ'
   }
 };

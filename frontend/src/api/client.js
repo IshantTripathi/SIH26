@@ -192,5 +192,48 @@ export const api = {
   submitAssessment: (payload) => request('/onboarding/assessment/submit', { method: 'POST', body: JSON.stringify(payload) }),
   getPendingApplications: (societyId) => request(societyId ? `/onboarding/pending/${societyId}` : '/onboarding/pending'),
   reviewApplication: (id, payload) => request(`/onboarding/${id}/review`, { method: 'PATCH', body: JSON.stringify(payload) }),
-  getMyApplications: () => request('/onboarding/my-applications')
+  getMyApplications: () => request('/onboarding/my-applications'),
+
+  // Innovation 1: Voice-First Conversational Booking
+  startVoiceBooking: () => request('/voice/start', { method: 'POST' }),
+  sendVoiceInput: (sessionId, text) => request('/voice/input', { method: 'POST', body: JSON.stringify({ sessionId, text }) }),
+  getVoiceSession: (sessionId) => request(`/voice/session/${sessionId}`),
+
+  // Innovation 2: Worker Digital Skill Passport
+  getWorkerPassport: (workerId) => request(`/passport/worker/${workerId}`),
+  verifyPassport: (workerId, hash) => request(`/passport/verify/${workerId}/${hash}`),
+  endorseWorker: (payload) => request('/passport/endorse', { method: 'POST', body: JSON.stringify(payload) }),
+  getPassportStats: () => request('/passport/stats'),
+
+  // Innovation 3: Predictive Maintenance Alerts
+  getMaintenanceAlerts: (customerId) => request(`/predictive/alerts/${customerId}`),
+  getMaintenanceStats: (customerId) => request(`/predictive/stats/${customerId}`),
+
+  // Innovation 4: Community Impact Dashboard
+  getCommunityImpact: () => request('/impact'),
+
+  // Innovation 5: Smart Scheduling
+  getScheduleSuggestions: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/scheduling/suggestions${query ? `?${query}` : ''}`);
+  },
+  getSeasonalForecast: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/scheduling/forecast${query ? `?${query}` : ''}`);
+  },
+
+  // Innovation 6: Worker Wellness
+  getWorkerWellness: (workerId) => request(`/wellness/worker/${workerId}`),
+  getMyWellness: () => request('/wellness/my-wellness'),
+  getWellnessAlerts: (societyId) => request(`/wellness/alerts/${societyId}`),
+
+  // Innovation 7: Dividend Calculator
+  getWorkerDividend: (workerId) => request(`/dividend/worker/${workerId}`),
+  getMyDividend: () => request('/dividend/my-dividend'),
+  getCooperativeSurplus: () => request('/dividend/surplus'),
+
+  // Innovation 8: AR Repair Guidance
+  getRepairGuide: (category, issueType) => request(`/ar-guidance/guide/${encodeURIComponent(category)}${issueType ? `/${encodeURIComponent(issueType)}` : ''}`),
+  getAllRepairGuides: () => request('/ar-guidance/guides'),
+  getToolRecommendations: (category) => request(`/ar-guidance/tools/${encodeURIComponent(category)}`)
 };

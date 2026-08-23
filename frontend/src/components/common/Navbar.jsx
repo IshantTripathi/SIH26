@@ -22,7 +22,12 @@ import {
   Bell,
   UserPlus,
   BarChart3,
-  Vote
+  Vote,
+  Mic,
+  Award,
+  Heart,
+  Coins,
+  Globe
 } from 'lucide-react';
 
 export function Navbar({ onOpenDemoScenarios }) {
@@ -159,6 +164,26 @@ export function Navbar({ onOpenDemoScenarios }) {
                     >
                       {t('customer.pastBookings', 'My Bookings & Invoices')}
                     </Link>
+                    <Link
+                      to="/customer/voice-book"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/customer/voice-book'
+                          ? 'bg-amber-50 text-amber-900 font-semibold'
+                          : 'text-slate-700 hover:text-amber-900 hover:bg-amber-50'
+                      }`}
+                    >
+                      <Mic className="w-3.5 h-3.5" /> Voice Book
+                    </Link>
+                    <Link
+                      to="/impact"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/impact'
+                          ? 'bg-green-50 text-green-900 font-semibold'
+                          : 'text-slate-700 hover:text-green-900 hover:bg-green-50'
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" /> Impact
+                    </Link>
                   </>
                 )}
 
@@ -193,6 +218,36 @@ export function Navbar({ onOpenDemoScenarios }) {
                       }`}
                     >
                       {t('worker.welfare', 'Welfare & Insurance')}
+                    </Link>
+                    <Link
+                      to="/worker/passport"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/passport'
+                          ? 'bg-purple-50 text-purple-900 font-semibold'
+                          : 'text-slate-700 hover:text-purple-900 hover:bg-purple-50'
+                      }`}
+                    >
+                      <Award className="w-3.5 h-3.5" /> Passport
+                    </Link>
+                    <Link
+                      to="/worker/wellness"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/wellness'
+                          ? 'bg-red-50 text-red-900 font-semibold'
+                          : 'text-slate-700 hover:text-red-900 hover:bg-red-50'
+                      }`}
+                    >
+                      <Heart className="w-3.5 h-3.5" /> Wellness
+                    </Link>
+                    <Link
+                      to="/worker/dividend"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/dividend'
+                          ? 'bg-amber-50 text-amber-900 font-semibold'
+                          : 'text-slate-700 hover:text-amber-900 hover:bg-amber-50'
+                      }`}
+                    >
+                      <Coins className="w-3.5 h-3.5" /> Dividend
                     </Link>
                   </>
                 )}
@@ -452,6 +507,12 @@ export function Navbar({ onOpenDemoScenarios }) {
               <Link to="/customer/bookings" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 My Bookings & Invoices
               </Link>
+              <Link to="/customer/voice-book" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-amber-700 font-semibold">
+                <Mic className="w-3.5 h-3.5" /> Voice Booking (Hindi/EN)
+              </Link>
+              <Link to="/impact" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-green-700">
+                <Globe className="w-3.5 h-3.5" /> Community Impact
+              </Link>
             </div>
           )}
 
@@ -468,6 +529,15 @@ export function Navbar({ onOpenDemoScenarios }) {
               </Link>
               <Link to="/worker/utilization" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-slate-700">
                 <BarChart3 className="w-3.5 h-3.5" /> Utilization Dashboard
+              </Link>
+              <Link to="/worker/passport" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm font-semibold text-purple-700">
+                <Award className="w-3.5 h-3.5" /> Digital Skill Passport
+              </Link>
+              <Link to="/worker/wellness" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-red-600">
+                <Heart className="w-3.5 h-3.5" /> Wellness & Fatigue
+              </Link>
+              <Link to="/worker/dividend" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-amber-700">
+                <Coins className="w-3.5 h-3.5" /> Dividend Calculator
               </Link>
             </div>
           )}

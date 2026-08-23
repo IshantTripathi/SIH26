@@ -21,6 +21,14 @@ import trustRoutes from './src/routes/trustRoutes.js';
 import matchingRoutes from './src/routes/matchingRoutes.js';
 import workloadRoutes from './src/routes/workloadRoutes.js';
 import governanceRoutes from './src/routes/governanceRoutes.js';
+import voiceRoutes from './src/routes/voiceRoutes.js';
+import passportRoutes from './src/routes/passportRoutes.js';
+import predictiveRoutes from './src/routes/predictiveRoutes.js';
+import impactRoutes from './src/routes/impactRoutes.js';
+import schedulingRoutes from './src/routes/schedulingRoutes.js';
+import wellnessRoutes from './src/routes/wellnessRoutes.js';
+import dividendRoutes from './src/routes/dividendRoutes.js';
+import arRoutes from './src/routes/arRoutes.js';
 
 dotenv.config();
 
@@ -70,6 +78,14 @@ app.use('/api/trust', trustRoutes);
 app.use('/api/matching', matchingRoutes);
 app.use('/api/workload', workloadRoutes);
 app.use('/api/governance', governanceRoutes);
+app.use('/api/voice', voiceRoutes);
+app.use('/api/passport', passportRoutes);
+app.use('/api/predictive', predictiveRoutes);
+app.use('/api/impact', impactRoutes);
+app.use('/api/scheduling', schedulingRoutes);
+app.use('/api/wellness', wellnessRoutes);
+app.use('/api/dividend', dividendRoutes);
+app.use('/api/ar-guidance', arRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {

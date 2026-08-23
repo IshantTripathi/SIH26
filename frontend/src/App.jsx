@@ -16,12 +16,17 @@ import { WorkerEarningsPage } from './pages/worker/WorkerEarningsPage';
 import { WorkerWelfarePage } from './pages/worker/WorkerWelfarePage';
 import { WorkerApplicationPage } from './pages/worker/WorkerApplicationPage';
 import { WorkerUtilizationPage } from './pages/worker/WorkerUtilizationPage';
+import { SkillPassportPage } from './pages/worker/SkillPassportPage';
+import { WellnessPage } from './pages/worker/WellnessPage';
+import { DividendPage } from './pages/worker/DividendPage';
 import { GovernancePage } from './pages/society/GovernancePage';
 import { SocietyDashboard } from './pages/society/SocietyDashboard';
 import { SocietyWorkersPage } from './pages/society/SocietyWorkersPage';
 import { SocietyComplaintsPage } from './pages/society/SocietyComplaintsPage';
 import { FederationDashboard } from './pages/federation/FederationDashboard';
 import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
+import { VoiceBookingPage } from './pages/customer/VoiceBookingPage';
+import { CommunityImpactPage } from './pages/CommunityImpactPage';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -51,6 +56,7 @@ export function App() {
           {/* Customer Routes */}
           <Route path="/customer" element={<CustomerDashboard />} />
           <Route path="/customer/bookings" element={<BookingHistoryPage />} />
+          <Route path="/customer/voice-book" element={<VoiceBookingPage />} />
 
           {/* Worker Routes */}
           <Route path="/worker" element={<WorkerDashboard />} />
@@ -58,6 +64,9 @@ export function App() {
           <Route path="/worker/welfare" element={<WorkerWelfarePage />} />
           <Route path="/worker/apply" element={<WorkerApplicationPage />} />
           <Route path="/worker/utilization" element={<WorkerUtilizationPage />} />
+          <Route path="/worker/passport" element={<SkillPassportPage />} />
+          <Route path="/worker/wellness" element={<WellnessPage />} />
+          <Route path="/worker/dividend" element={<DividendPage />} />
 
           {/* Society Admin Routes */}
           <Route path="/society" element={<SocietyDashboard />} />
@@ -70,6 +79,9 @@ export function App() {
 
           {/* Platform Admin Routes */}
           <Route path="/admin" element={<PlatformAdminPage />} />
+
+          {/* Community Impact */}
+          <Route path="/impact" element={<CommunityImpactPage />} />
 
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
