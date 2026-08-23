@@ -15,7 +15,9 @@ import {
   ArrowRight,
   RefreshCw,
   AlertCircle,
-  Power
+  Power,
+  ShieldAlert,
+  Navigation
 } from 'lucide-react';
 import { StatCard, WorkloadBadge } from '../../components/common/StatCard';
 import { Link } from 'react-router-dom';
@@ -32,12 +34,55 @@ export function WorkerDashboard() {
   const [togglingStatus, setTogglingStatus] = useState(false);
   const [otpInput, setOtpInput] = useState('');
   const [updatingJobId, setUpdatingJobId] = useState(null);
+  const [sosModalJob, setSosModalJob] = useState(null);
+  const [sosMessage, setSosMessage] = useState('');
+
+  const [gpsActive, setGpsActive] = useState(false);
 
   useEffect(() => {
     fetchWorkerData();
     const interval = setInterval(fetchWorkerData, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  // GPS auto-tracking when in active job (On The Way / In Progress)
+  useEffect(() => {
+    const activeJob = jobs.find(j => ['ON_THE_WAY', 'ARRIVED', 'IN_PROGRESS'].includes(j.status));
+    if (!activeJob) { setGpsActive(false); return; }
+
+    setGpsActive(true);
+    const gpsInterval = setInterval(async () => {
+      if ('geolocation' in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          async (pos) => {
+            try {
+              await api.updateWorkerLocation({
+                lat: pos.coords.latitude,
+                lng: pos.coords.longitude,
+                jobId: activeJob.id
+              });
+            } catch (e) {}
+          },
+          (err) => {
+            // Fallback: use a simulated location near Delhi for demo
+            api.updateWorkerLocation({
+              lat: 28.6140 + (Math.random() - 0.5) * 0.01,
+              lng: 77.2095 + (Math.random() - 0.5) * 0.01,
+              jobId: activeJob.id
+            }).catch(() => {});
+          },
+          { enableHighAccuracy: true, timeout: 5000 }
+        );
+      } else {
+        api.updateWorkerLocation({
+          lat: 28.6140 + (Math.random() - 0.5) * 0.01,
+          lng: 77.2095 + (Math.random() - 0.5) * 0.01,
+          jobId: activeJob.id
+        }).catch(() => {});
+      }
+    }, 10000);
+    return () => { clearInterval(gpsInterval); setGpsActive(false); };
+  }, [jobs]);
 
   const fetchWorkerData = async () => {
     try {
@@ -95,6 +140,32 @@ export function WorkerDashboard() {
     }
     setUpdatingJobId(null);
   };
+
+  const handleSos = async () => {
+    if (!sosModalJob) return;
+    try {
+      const res = await api.sendSosAlert(sosModalJob.id, { type: 'worker', message: sosMessage || 'Worker emergency assistance needed' });
+      if (res.success) {
+        setSosModalJob(null);
+        setSosMessage('');
+        alert('SOS alert sent! Society Admin & Federation Admin have been notified.');
+      }
+    } catch (err) { alert(err.message); }
+  };
+
+  // Punctuality calculation
+  const completedJobs = jobs.filter(j => j.status === 'COMPLETED');
+  let onTimeCount = 0;
+  for (const j of completedJobs) {
+    const history = j.statusHistory || [];
+    const accepted = history.find(h => h.status === 'ACCEPTED');
+    const arrived = history.find(h => h.status === 'ARRIVED');
+    if (accepted?.timestamp && arrived?.timestamp) {
+      const diffMin = (new Date(arrived.timestamp) - new Date(accepted.timestamp)) / 60000;
+      if (diffMin <= 20) onTimeCount++;
+    }
+  }
+  const punctualityPercent = completedJobs.length > 0 ? Math.round((onTimeCount / completedJobs.length) * 100) : 100;
 
   const activeJob = jobs.find(
     (j) =>
@@ -154,6 +225,12 @@ export function WorkerDashboard() {
             <Power className="w-5 h-5" />
           </button>
         </div>
+        {gpsActive && (
+          <div className="flex items-center gap-1.5 bg-blue-50 px-2.5 py-1 rounded-lg border border-blue-200 text-[10px] font-bold text-blue-700">
+            <Navigation className="w-3 h-3 animate-pulse" />
+            LIVE GPS TRACKING ACTIVE (10s interval)
+          </div>
+        )}
       </div>
 
       {/* KPI Cards */}
@@ -178,6 +255,13 @@ export function WorkerDashboard() {
           subtitle={`Based on ${profile?.ratingCount || 28} verified reviews`}
           icon={Award}
           color="amber"
+        />
+        <StatCard
+          title="Punctuality"
+          value={`${punctualityPercent}%`}
+          subtitle={`On-time arrivals (${onTimeCount}/${completedJobs.length || 0})`}
+          icon={Clock}
+          color={punctualityPercent >= 90 ? 'green' : 'amber'}
         />
         <StatCard
           title={t('worker.welfare', 'Welfare Shield')}
@@ -224,6 +308,7 @@ export function WorkerDashboard() {
                   </div>
 
                   <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+                    <button onClick={async()=>{try{await api.declineJobOffer(offer.id,{reason:'Worker busy'}); await fetchWorkerData();}catch(e){alert(e.message)}} } className="px-3 py-1.5 bg-slate-100 hover:bg-red-50 text-red-700 rounded-lg text-xs font-bold border border-slate-200">Decline</button>
                     <button
                       onClick={() => handleAdvanceJob(offer.id, 'ACCEPTED')}
                       disabled={updatingJobId === offer.id}
@@ -335,6 +420,14 @@ export function WorkerDashboard() {
 
                 {/* State Transition Actions */}
                 <div className="pt-2 flex flex-col sm:flex-row items-center justify-between gap-3 border-t border-slate-100">
+                  <button
+                    onClick={() => { setSosModalJob(activeJob); setSosMessage(''); }}
+                    className="px-3 py-1.5 bg-red-50 hover:bg-red-100 text-red-700 rounded-lg text-xs font-bold border border-red-200 flex items-center gap-1"
+                  >
+                    <ShieldAlert className="w-3.5 h-3.5" />
+                    SOS Emergency
+                  </button>
+                  <div className="flex items-center gap-2">
                   {activeJob.status === 'ACCEPTED' && (
                     <button
                       onClick={() => handleAdvanceJob(activeJob.id, 'ON_THE_WAY')}
@@ -392,6 +485,7 @@ export function WorkerDashboard() {
                       </div>
                     </div>
                   )}
+                  </div>
                 </div>
               </div>
             )}
@@ -440,6 +534,26 @@ export function WorkerDashboard() {
                 <div>
                   <strong>Service Coverage:</strong> {profile?.serviceAreas?.join(', ') || 'Central Metro'}
                 </div>
+                <div className="pt-2 border-t border-slate-200 mt-2">
+                  <div className="font-bold text-slate-800 flex items-center gap-1">Verifiable Skill Passport <span className="text-[10px] bg-blue-100 text-blue-800 px-1.5 py-0.5 rounded">NCCT QR</span></div>
+                  <div className="flex items-center gap-2 mt-1">
+                    <div className="w-16 h-16 bg-white border-2 border-slate-800 rounded flex items-center justify-center text-[7px] font-mono text-center p-1">
+                      QR<br/>{profile?.certifications?.[0]?.code || 'CERT-DEMO-002'}<br/>✓ Verified
+                    </div>
+                    <div className="flex-1">
+                      <div className="font-mono text-[10px] break-all bg-slate-100 p-1 rounded">{profile?.certifications?.[0]?.code || 'CERT-DEMO-002'}|{profile?.code}|hash</div>
+                      <button onClick={async()=>{
+                        try{
+                          const code=profile?.certifications?.[0]?.code;
+                          if(!code) return alert('No cert code');
+                          const r=await api.verifyCert(code);
+                          alert(r.verified ? `✓ Verified: ${r.holder.name} — ${r.certificate.title} (${r.certificate.code})` : 'Not verified');
+                        }catch(e){alert(e.message)}
+                      }} className="mt-1 text-[11px] bg-blue-900 text-white px-2 py-0.5 rounded font-bold">Verify Now</button>
+                    </div>
+                  </div>
+                  <div className="text-[10px] text-slate-400">Customer scans QR to verify on cooperative registry — portable across societies.</div>
+                </div>
               </div>
             </div>
           </div>
@@ -472,6 +586,38 @@ export function WorkerDashboard() {
           </div>
         </div>
       </div>
+
+      {/* SOS Modal */}
+      {sosModalJob && (
+        <div className="fixed inset-0 z-50 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-white rounded-xl shadow-xl border border-red-300 w-full max-w-md p-6 space-y-4 animate-in zoom-in-95">
+            <h3 className="text-base font-bold text-red-700 flex items-center gap-2">
+              <ShieldAlert className="w-5 h-5" />
+              SOS Emergency Alert
+            </h3>
+            <p className="text-xs text-slate-600">
+              This will immediately notify the <strong>Society Admin</strong> and <strong>Federation Admin</strong>. A field team will be dispatched.
+            </p>
+            <div>
+              <label className="block text-xs font-semibold text-slate-700 mb-1">Emergency Message (optional)</label>
+              <textarea
+                rows="2"
+                value={sosMessage}
+                onChange={(e) => setSosMessage(e.target.value)}
+                placeholder="Describe the emergency..."
+                className="w-full px-3 py-2 border border-red-300 rounded-lg text-xs"
+              />
+            </div>
+            <div className="flex justify-end space-x-2">
+              <button onClick={() => setSosModalJob(null)} className="px-4 py-2 text-xs font-semibold text-slate-600">Cancel</button>
+              <button onClick={handleSos} className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white text-xs font-bold rounded-lg shadow-sm flex items-center gap-1">
+                <ShieldAlert className="w-3.5 h-3.5" />
+                Send SOS Alert
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

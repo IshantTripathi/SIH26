@@ -118,6 +118,11 @@ export function LandingPage({ onOpenDemoScenarios }) {
                 placeholder='e.g., "I have a leaking kitchen tap" or "Ceiling fan makes strange noise"'
                 className="flex-1 px-4 py-2.5 rounded-lg border border-slate-300 text-sm focus:outline-none focus:ring-2 focus:ring-blue-900 bg-white"
               />
+              <button type="button" onClick={()=>{
+                const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+                if(!SR) return alert('Voice not supported');
+                const r=new SR(); r.lang='hi-IN'; r.onresult=e=>setProblemQuery(e.results[0][0].transcript); r.start();
+              }} className="px-3 py-2.5 bg-amber-100 border border-amber-300 rounded-lg text-xs" title="Speak in Hindi/English">🎙️</button>
               <button
                 type="submit"
                 disabled={isSearching}
@@ -311,6 +316,26 @@ export function LandingPage({ onOpenDemoScenarios }) {
               <div className="text-[10px] text-slate-500">{cat.desc}</div>
             </div>
           ))}
+        </div>
+      </section>
+
+      {/* Worker Onboarding CTA */}
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border-2 border-emerald-200 rounded-2xl p-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-bold text-emerald-900 flex items-center gap-2">
+              🛠️ {t('onboarding.apply', 'Apply as a Verified Cooperative Worker')}
+            </h3>
+            <p className="text-xs text-emerald-700 mt-1">
+              Join the cooperative workforce. Complete a skill assessment and get society-verified certification.
+            </p>
+          </div>
+          <Link
+            to="/worker/apply"
+            className="bg-emerald-700 hover:bg-emerald-800 text-white px-5 py-2.5 rounded-lg text-xs font-bold flex items-center gap-1.5 whitespace-nowrap shadow-sm"
+          >
+            Apply Now <ArrowRight className="w-3.5 h-3.5" />
+          </Link>
         </div>
       </section>
     </div>

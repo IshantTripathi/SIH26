@@ -34,6 +34,11 @@ export function FederationDashboard() {
   const [data, setData] = useState(null);
   const [analytics, setAnalytics] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [dividend, setDividend] = useState(null);
+  const [proposals, setProposals] = useState([]);
+  const [tools, setTools] = useState([]);
+  const [newPropTitle, setNewPropTitle] = useState('');
+  const [newPropDesc, setNewPropDesc] = useState('');
 
   useEffect(() => {
     fetchFederationData();
@@ -44,9 +49,11 @@ export function FederationDashboard() {
     try {
       const fRes = await api.getFederationDashboard();
       if (fRes.success) setData(fRes);
-
       const aRes = await api.getDemandAnalytics();
       if (aRes.success) setAnalytics(aRes);
+      try { const dRes = await api.getDividendPool(); if(dRes.success) setDividend(dRes); } catch(e){}
+      try { const pRes = await api.getProposals(); if(pRes.success) setProposals(pRes.proposals); } catch(e){}
+      try { const tRes = await api.getToolInventory(); if(tRes.success) setTools(tRes.tools); } catch(e){}
     } catch (err) {
       console.error(err);
     }
@@ -227,6 +234,20 @@ export function FederationDashboard() {
               >
                 <strong>{f.potentialShortage > 0 ? `Shortage: ${f.potentialShortage} Workers` : 'Workforce Balanced'}</strong> • {f.recommendation}
               </div>
+              {f.potentialShortage > 0 && (
+                <button
+                  onClick={async()=>{
+                    try{
+                      const from = f.district==='North District'?'East District':'Central Metro';
+                      const res=await api.mobilizeWorkforce({fromDistrict:from,toDistrict:f.district,serviceCategory:f.serviceCategory,count:Math.min(6,f.potentialShortage)});
+                      alert(res.message); fetchFederationData();
+                    }catch(e){alert(e.message)}
+                  }}
+                  className="w-full mt-2 bg-[#0f2e5a] hover:bg-[#1a4b8c] text-white py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
+                >
+                  <ArrowRight className="w-3 h-3" /> Mobilize {Math.min(6,f.potentialShortage)} Workers
+                </button>
+              )}
             </div>
           ))}
         </div>
@@ -272,6 +293,76 @@ export function FederationDashboard() {
             height="240px"
           />
         </div>
+      </div>
+
+      {/* Patronage Dividend Engine (Unique Cooperative Ownership) */}
+      <div className="bg-gradient-to-r from-emerald-50 to-blue-50 border-2 border-emerald-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2"><Award className="w-4 h-4 text-emerald-700" /> Patronage Dividend Pool — Cooperative Ownership (vs Urban Company commission)</h3>
+          <span className="text-[10px] bg-emerald-700 text-white px-2 py-0.5 rounded font-bold">{dividend?.pool?.status || 'Pending Distribution'}</span>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-xs">
+          <div className="bg-white p-4 rounded-xl border border-emerald-200 text-center">
+            <div className="text-slate-500 uppercase text-[10px] font-bold">Total Surplus (Q3)</div>
+            <div className="text-2xl font-bold text-emerald-900 font-mono">₹{dividend?.pool?.totalSurplus || 125000}</div>
+            <div className="text-[11px] text-slate-400">{dividend?.pool?.distributionPeriod || 'Q3 2026'}</div>
+          </div>
+          <div className="bg-white p-4 rounded-xl border border-slate-200 md:col-span-2">
+            <div className="text-[11px] font-bold text-slate-700 mb-1">Top Dividends by Patronage (jobs × rating)</div>
+            <div className="divide-y divide-slate-100 max-h-24 overflow-y-auto">
+              {(dividend?.dividends || []).slice(0,3).map(d=>(
+                <div key={d.workerId} className="flex justify-between py-1 text-xs"><span className="font-semibold text-slate-800">{d.workerName} ({d.jobsCompleted} jobs)</span><span className="font-mono font-bold text-emerald-800">₹{d.dividendAmount} ({d.sharePercent}%)</span></div>
+              ))}
+            </div>
+          </div>
+        </div>
+        <button onClick={async()=>{try{await api.distributeDividend(); alert('Dividend distributed!'); fetchFederationData();}catch(e){alert(e.message)}}} className="px-4 py-2 bg-emerald-700 hover:bg-emerald-800 text-white rounded-lg text-xs font-bold">Distribute Patronage Dividend Now</button>
+        <p className="text-[11px] text-slate-500">Formula: dividend = (worker_jobs × rating / Σweights) × surplus_pool. Urban Company extracts 25%; here workers own surplus.</p>
+      </div>
+
+      {/* Democratic Governance — Proposals & Voting */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <div className="flex items-center justify-between">
+          <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2"><Users className="w-4 h-4 text-blue-700" /> Democratic Governance — One Worker One Vote</h3>
+          <span className="text-[10px] bg-blue-100 text-blue-800 px-2 py-0.5 rounded font-bold">{proposals.filter(p=>p.status==='Active').length} Active Proposals</span>
+        </div>
+        <div className="space-y-2">
+          {proposals.map(p=>(
+            <div key={p.id} className="p-3 border border-slate-200 rounded-xl bg-slate-50 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              <div>
+                <div className="font-bold text-xs text-slate-900">{p.title} <span className={`ml-2 text-[10px] px-1.5 py-0.5 rounded font-bold ${p.status==='Approved'?'bg-emerald-100 text-emerald-800':'bg-amber-100 text-amber-800'}`}>{p.status}</span></div>
+                <div className="text-[11px] text-slate-500">{p.description} • {p.votesFor} For / {p.votesAgainst} Against</div>
+              </div>
+              {p.status==='Active' && (
+                <div className="flex gap-1">
+                  <button onClick={async()=>{await api.voteProposal(p.id,'for'); fetchFederationData();}} className="px-3 py-1 bg-emerald-600 text-white rounded text-xs font-bold">Vote For</button>
+                  <button onClick={async()=>{await api.voteProposal(p.id,'against'); fetchFederationData();}} className="px-3 py-1 bg-slate-200 text-slate-700 rounded text-xs font-bold">Against</button>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
+        <div className="flex gap-2 pt-2 border-t border-slate-100">
+          <input value={newPropTitle} onChange={e=>setNewPropTitle(e.target.value)} placeholder="New proposal title..." className="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-xs" />
+          <input value={newPropDesc} onChange={e=>setNewPropDesc(e.target.value)} placeholder="Description..." className="flex-1 px-3 py-1.5 border border-slate-300 rounded-lg text-xs" />
+          <button onClick={async()=>{if(!newPropTitle) return; await api.createProposal({title:newPropTitle,description:newPropDesc}); setNewPropTitle(''); setNewPropDesc(''); fetchFederationData();}} className="px-4 py-1.5 bg-[#0f2e5a] text-white rounded-lg text-xs font-bold">Propose</button>
+        </div>
+      </div>
+
+      {/* Tool Library — Cooperative Circular Economy */}
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 shadow-sm space-y-4">
+        <h3 className="font-bold text-sm text-slate-900 flex items-center gap-2"><Building2 className="w-4 h-4 text-amber-700" /> Tool Library — Borrow, Don't Buy (Cooperative Inventory)</h3>
+        <div className="grid grid-cols-1 sm:grid-cols-4 gap-3">
+          {tools.map(t=>(
+            <div key={t.id} className="border border-slate-200 rounded-xl p-3 space-y-1 bg-slate-50">
+              <div className="font-bold text-xs text-slate-900">{t.name}</div>
+              <div className="text-[11px] text-slate-500">{t.category} • {t.availableUnits}/{t.totalUnits} avail</div>
+              <div className="text-[11px] font-mono text-blue-900">₹{t.perDayFee}/day + ₹{t.depositAmount} deposit</div>
+              <button onClick={async()=>{try{await api.borrowTool({toolId:t.id,days:3}); alert('Tool borrowed for 3 days'); fetchFederationData();}catch(e){alert(e.message)}}} disabled={t.availableUnits<=0} className="w-full mt-1 bg-[#0f2e5a] text-white py-1 rounded text-xs font-bold disabled:opacity-40">Borrow</button>
+            </div>
+          ))}
+        </div>
+        <p className="text-[11px] text-slate-500">Urban Company forces workers to buy kits; here society pools capital — circular economy, lower entry barrier.</p>
       </div>
 
       {/* Multi-Society Comparison Table */}

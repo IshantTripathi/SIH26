@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { api } from '../../api/client';
-import { FileText, Star, AlertCircle, ArrowLeft, RefreshCw } from 'lucide-react';
+import { FileText, Star, AlertCircle, ArrowLeft, RefreshCw, Search, Download } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { InvoiceModal } from '../../components/common/InvoiceModal';
 
@@ -9,6 +9,7 @@ export function BookingHistoryPage() {
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('ALL');
   const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     fetchHistory();
@@ -27,7 +28,17 @@ export function BookingHistoryPage() {
     setLoading(false);
   };
 
-  const filteredJobs = filter === 'ALL' ? jobs : jobs.filter(j => j.status === filter);
+  const filteredJobs = jobs.filter(j => {
+    const matchStatus = filter === 'ALL' || j.status === filter;
+    const matchSearch = !search || j.serviceCategory?.toLowerCase().includes(search.toLowerCase()) || j.problemDescription?.toLowerCase().includes(search.toLowerCase()) || j.code?.toLowerCase().includes(search.toLowerCase());
+    return matchStatus && matchSearch;
+  });
+  const handleExportCSV = () => {
+    const headers=['Job ID','Service','Worker','Date','Status','Gross','Net Pay','Payment'];
+    const rows=filteredJobs.map(j=>[j.code||j.id,j.serviceCategory,j.workerName,j.scheduledDate||j.createdAt,j.status,j.pricing?.grossAmount,j.pricing?.netWorkerEarnings,j.paymentStatus]);
+    const csv='data:text/csv;charset=utf-8,'+[headers.join(','),...rows.map(r=>r.join(','))].join('\n');
+    const link=document.createElement('a'); link.href=encodeURI(csv); link.download=`Bookings_${new Date().toISOString().split('T')[0]}.csv`; document.body.appendChild(link); link.click(); document.body.removeChild(link);
+  };
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
@@ -42,13 +53,14 @@ export function BookingHistoryPage() {
           </p>
         </div>
 
-        <button
-          onClick={fetchHistory}
-          className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1 self-start"
-        >
-          <RefreshCw className="w-3.5 h-3.5" />
-          Refresh
-        </button>
+        <div className="flex items-center gap-2 self-start">
+          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-lg px-2 py-1">
+            <Search className="w-3.5 h-3.5 text-slate-400" />
+            <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search jobs..." className="text-xs outline-none w-32" />
+          </div>
+          <button onClick={handleExportCSV} className="px-3 py-2 bg-emerald-700 text-white rounded-lg text-xs font-bold flex items-center gap-1"><Download className="w-3.5 h-3.5" />CSV</button>
+          <button onClick={fetchHistory} className="p-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-lg text-xs font-semibold flex items-center gap-1"><RefreshCw className="w-3.5 h-3.5" />Refresh</button>
+        </div>
       </div>
 
       {/* Filter Tabs */}

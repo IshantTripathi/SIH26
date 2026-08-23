@@ -1,6 +1,70 @@
 import { store } from '../data/store.js';
 import { ROLES, WORKLOAD_STATUS } from '../config/constants.js';
 
+export function updateWorkerLocation(req, res) {
+  try {
+    const workerId = req.user.workerId || req.user.id;
+    const { lat, lng, jobId } = req.body;
+
+    if (!workerId || lat == null || lng == null) {
+      return res.status(400).json({ success: false, message: 'workerId, lat, and lng are required.' });
+    }
+
+    store.workerLocations[workerId] = {
+      lat: Number(lat),
+      lng: Number(lng),
+      jobId: jobId || null,
+      updatedAt: new Date().toISOString()
+    };
+
+    store.findByIdAndUpdate('workers', workerId, {
+      location: { lat: Number(lat), lng: Number(lng), area: store.findById('workers', workerId)?.location?.area || '' }
+    });
+
+    return res.json({ success: true, message: 'Location updated.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+export function getWorkerLocation(req, res) {
+  try {
+    const { workerId } = req.params;
+    const loc = store.workerLocations[workerId];
+    if (!loc) {
+      const worker = store.findById('workers', workerId);
+      if (worker?.location) {
+        return res.json({ success: true, location: worker.location, source: 'registered' });
+      }
+      return res.status(404).json({ success: false, message: 'No location data for this worker.' });
+    }
+    return res.json({ success: true, location: loc, source: 'live' });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+export function getJobWorkerLocation(req, res) {
+  try {
+    const { id: jobId } = req.params;
+    const job = store.findById('jobs', jobId);
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found.' });
+    if (!job.workerId) return res.json({ success: true, location: null, message: 'No worker assigned.' });
+
+    const loc = store.workerLocations[job.workerId];
+    if (loc) {
+      return res.json({ success: true, location: loc, source: 'live', workerId: job.workerId });
+    }
+    const worker = store.findById('workers', job.workerId);
+    if (worker?.location) {
+      return res.json({ success: true, location: worker.location, source: 'registered', workerId: job.workerId });
+    }
+    return res.json({ success: true, location: null, message: 'Worker location unavailable.' });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
 export function getWorkerProfile(req, res) {
   try {
     const workerId = req.params.id || req.user.workerId;

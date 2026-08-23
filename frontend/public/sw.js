@@ -32,11 +32,21 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Let API requests pass straight through to network
+  // Queue POST /api/jobs when offline via Background Sync pattern (localStorage fallback in client)
+  if (event.request.url.includes('/api/') && event.request.method === 'POST' && event.request.url.includes('/jobs')) {
+    event.respondWith(
+      fetch(event.request.clone()).catch(async () => {
+        const body = await event.request.clone().text();
+        const clients = await self.clients.matchAll();
+        clients.forEach(c => c.postMessage({ type: 'OFFLINE_JOB_QUEUED', body }));
+        return new Response(JSON.stringify({ success: false, queued: true, message: 'Offline — job queued locally, will sync when back online (PWA)' }), { headers: { 'Content-Type': 'application/json' }, status: 202 });
+      })
+    );
+    return;
+  }
   if (event.request.url.includes('/api/')) {
     return;
   }
-
   event.respondWith(
     fetch(event.request).catch(() => {
       return caches.match(event.request);

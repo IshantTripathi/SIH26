@@ -34,12 +34,21 @@ const customerIcon = new L.DivIcon({
   iconAnchor: [13, 13]
 });
 
+// Live tracked worker icon (pulsing)
+const liveWorkerIcon = new L.DivIcon({
+  className: 'custom-live-worker-pin',
+  html: `<div style="background-color: #dc2626; color: white; border: 3px solid white; border-radius: 50%; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; font-size: 14px; box-shadow: 0 0 12px rgba(220,38,38,0.6); animation: pulse 1.5s infinite;">👷</div>`,
+  iconSize: [32, 32],
+  iconAnchor: [16, 16]
+});
+
 export function LeafletCoopMap({
-  center = [28.6139, 77.2090], // Delhi Center
+  center = [28.6139, 77.2090],
   zoom = 12,
   societies = [],
   workers = [],
   customerLocation = null,
+  liveWorkerLocation = null,
   demandClusters = [],
   height = '400px'
 }) {
@@ -150,6 +159,21 @@ export function LeafletCoopMap({
             </Popup>
           </Marker>
         )}
+
+        {/* Live Worker Location (real-time GPS tracking) */}
+        {liveWorkerLocation && (
+          <Marker position={[liveWorkerLocation.lat, liveWorkerLocation.lng]} icon={liveWorkerIcon}>
+            <Popup>
+              <div className="text-xs p-1">
+                <div className="font-bold text-red-700">Worker LIVE Location</div>
+                <div className="text-[11px] text-slate-600">
+                  Lat: {liveWorkerLocation.lat?.toFixed(4)} | Lng: {liveWorkerLocation.lng?.toFixed(4)}
+                </div>
+                <div className="text-[10px] text-green-700 font-bold">Tracking active</div>
+              </div>
+            </Popup>
+          </Marker>
+        )}
       </MapContainer>
 
       {/* Map Legend Overlay */}
@@ -158,7 +182,11 @@ export function LeafletCoopMap({
         <div className="flex items-center gap-1.5"><span className="text-sm">🏛️</span> Cooperative Society Center</div>
         <div className="flex items-center gap-1.5"><span className="text-sm">👷</span> Verified Worker Zone</div>
         <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> High Demand Surge Area</div>
+        {liveWorkerLocation && (
+          <div className="flex items-center gap-1.5"><span className="w-2.5 h-2.5 rounded-full bg-red-600 inline-block animate-pulse"></span> Worker Live GPS</div>
+        )}
       </div>
+      <style>{`@keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220,38,38,0.5); } 70% { box-shadow: 0 0 0 12px rgba(220,38,38,0); } 100% { box-shadow: 0 0 0 0 rgba(220,38,38,0); } }`}</style>
     </div>
   );
 }

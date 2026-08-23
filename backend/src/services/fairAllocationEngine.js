@@ -126,12 +126,30 @@ export function scoreWorkerForJob(worker, jobRequest) {
     fairnessScore = 3;
   }
 
-  // 7. Reliability & Ratings (Max 5 pts)
+  // 7. Reliability & Ratings (Max 5 pts) — includes punctuality
   let reliabilityScore = 0;
   const ratingAvg = worker.ratingAvg || 4.5;
-  if (ratingAvg >= 4.8) {
+
+  // Punctuality: calculate on-time % from completed jobs' statusHistory
+  let punctualityPercent = 100;
+  const workerJobs = store.getCollection('jobs').filter(j => j.workerId === worker.id && j.status === 'COMPLETED');
+  if (workerJobs.length > 0) {
+    let onTimeCount = 0;
+    for (const j of workerJobs) {
+      const history = j.statusHistory || [];
+      const accepted = history.find(h => h.status === 'ACCEPTED');
+      const arrived = history.find(h => h.status === 'ARRIVED');
+      if (accepted?.timestamp && arrived?.timestamp) {
+        const diffMin = (new Date(arrived.timestamp) - new Date(accepted.timestamp)) / 60000;
+        if (diffMin <= 20) onTimeCount++;
+      }
+    }
+    punctualityPercent = Math.round((onTimeCount / workerJobs.length) * 100);
+  }
+
+  if (ratingAvg >= 4.8 && punctualityPercent >= 90) {
     reliabilityScore = 5;
-  } else if (ratingAvg >= 4.5) {
+  } else if (ratingAvg >= 4.5 && punctualityPercent >= 80) {
     reliabilityScore = 4;
   } else {
     reliabilityScore = 3;
@@ -171,6 +189,7 @@ export function scoreWorkerForJob(worker, jobRequest) {
   }
 
   reasons.push(`Service distance: ${distanceKm} km from request`);
+  reasons.push(`Punctuality: ${punctualityPercent}% on-time arrival`);
 
   return {
     workerId: worker.id,
@@ -180,6 +199,7 @@ export function scoreWorkerForJob(worker, jobRequest) {
     distanceKm,
     activeJobs,
     isOnline: worker.isOnline,
+    punctualityPercent,
     totalScore: Math.round(totalScore * 10) / 10,
     breakdown: {
       skillScore,

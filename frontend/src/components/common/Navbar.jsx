@@ -1,7 +1,8 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { api } from '../../api/client';
 import {
   Users,
   Briefcase,
@@ -17,7 +18,16 @@ import {
   X,
   Languages,
   Home,
-  FileText
+  FileText,
+  Bell,
+  UserPlus,
+  BarChart3,
+  Vote,
+  Mic,
+  Award,
+  Heart,
+  Coins,
+  Globe
 } from 'lucide-react';
 
 export function Navbar({ onOpenDemoScenarios }) {
@@ -28,6 +38,9 @@ export function Navbar({ onOpenDemoScenarios }) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [roleDropdownOpen, setRoleDropdownOpen] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [notifications, setNotifications] = useState([]);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const [notifLoading, setNotifLoading] = useState(false);
 
   const demoRoles = [
     { label: 'Customer Demo 01 (Household)', email: 'customer01@demo.coop', role: 'customer', icon: Users },
@@ -49,6 +62,24 @@ export function Navbar({ onOpenDemoScenarios }) {
     else if (role === 'federation_admin') navigate('/federation');
     else if (role === 'platform_admin') navigate('/admin');
   };
+
+  const fetchNotifications = async () => {
+    if (!user) return;
+    setNotifLoading(true);
+    try {
+      const res = await api.getNotifications({ limit: 10 });
+      if (res.success) setNotifications(res.notifications || []);
+    } catch (e) { /* silent */ }
+    setNotifLoading(false);
+  };
+
+  useEffect(() => {
+    if (user) {
+      fetchNotifications();
+      const iv = setInterval(fetchNotifications, 6000);
+      return () => clearInterval(iv);
+    }
+  }, [user]);
 
   const handleReset = async () => {
     if (window.confirm('Reset all demo data (jobs, workers, complaints, logs) back to initial default state?')) {
@@ -133,6 +164,26 @@ export function Navbar({ onOpenDemoScenarios }) {
                     >
                       {t('customer.pastBookings', 'My Bookings & Invoices')}
                     </Link>
+                    <Link
+                      to="/customer/voice-book"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/customer/voice-book'
+                          ? 'bg-amber-50 text-amber-900 font-semibold'
+                          : 'text-slate-700 hover:text-amber-900 hover:bg-amber-50'
+                      }`}
+                    >
+                      <Mic className="w-3.5 h-3.5" /> Voice Book
+                    </Link>
+                    <Link
+                      to="/impact"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/impact'
+                          ? 'bg-green-50 text-green-900 font-semibold'
+                          : 'text-slate-700 hover:text-green-900 hover:bg-green-50'
+                      }`}
+                    >
+                      <Globe className="w-3.5 h-3.5" /> Impact
+                    </Link>
                   </>
                 )}
 
@@ -167,6 +218,36 @@ export function Navbar({ onOpenDemoScenarios }) {
                       }`}
                     >
                       {t('worker.welfare', 'Welfare & Insurance')}
+                    </Link>
+                    <Link
+                      to="/worker/passport"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/passport'
+                          ? 'bg-purple-50 text-purple-900 font-semibold'
+                          : 'text-slate-700 hover:text-purple-900 hover:bg-purple-50'
+                      }`}
+                    >
+                      <Award className="w-3.5 h-3.5" /> Passport
+                    </Link>
+                    <Link
+                      to="/worker/wellness"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/wellness'
+                          ? 'bg-red-50 text-red-900 font-semibold'
+                          : 'text-slate-700 hover:text-red-900 hover:bg-red-50'
+                      }`}
+                    >
+                      <Heart className="w-3.5 h-3.5" /> Wellness
+                    </Link>
+                    <Link
+                      to="/worker/dividend"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/dividend'
+                          ? 'bg-amber-50 text-amber-900 font-semibold'
+                          : 'text-slate-700 hover:text-amber-900 hover:bg-amber-50'
+                      }`}
+                    >
+                      <Coins className="w-3.5 h-3.5" /> Dividend
                     </Link>
                   </>
                 )}
@@ -249,6 +330,42 @@ export function Navbar({ onOpenDemoScenarios }) {
 
           {/* Action Buttons & Persona Switcher */}
           <div className="hidden lg:flex items-center space-x-3">
+            {/* Notifications Bell */}
+            {user && (
+              <div className="relative">
+                <button
+                  onClick={() => { setNotifOpen(!notifOpen); if (!notifOpen) fetchNotifications(); }}
+                  className="relative bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-300 p-2 rounded-lg"
+                  title="Notifications & Audit Updates"
+                >
+                  <Bell className="w-4 h-4 text-blue-900" />
+                  {notifications.length > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-600 text-white text-[9px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                      {notifications.length > 9 ? '9+' : notifications.length}
+                    </span>
+                  )}
+                </button>
+                {notifOpen && (
+                  <div className="absolute right-0 mt-2 w-80 bg-white rounded-xl shadow-xl border border-slate-200 z-50 overflow-hidden">
+                    <div className="px-3 py-2 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
+                      <span className="text-xs font-bold text-slate-800 flex items-center gap-1"><Bell className="w-3.5 h-3.5" /> Notifications</span>
+                      <button onClick={() => setNotifOpen(false)} className="text-slate-400 hover:text-slate-600 text-xs">✕</button>
+                    </div>
+                    <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
+                      {notifLoading ? <div className="p-4 text-xs text-slate-400 text-center">Loading...</div>
+                        : notifications.length === 0 ? <div className="p-4 text-xs text-slate-400 text-center">No new notifications</div>
+                          : notifications.map(n => (
+                            <div key={n.id} className="p-3 hover:bg-slate-50">
+                              <div className="text-xs font-semibold text-slate-800">{n.title || n.action}</div>
+                              <div className="text-[11px] text-slate-500 line-clamp-2">{n.message || n.details}</div>
+                              <div className="text-[10px] text-slate-400 mt-1">{new Date(n.timestamp).toLocaleString()}</div>
+                            </div>
+                          ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
             {/* Language Switcher Button */}
             <button
               onClick={toggleLanguage}
@@ -390,6 +507,12 @@ export function Navbar({ onOpenDemoScenarios }) {
               <Link to="/customer/bookings" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 My Bookings & Invoices
               </Link>
+              <Link to="/customer/voice-book" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-amber-700 font-semibold">
+                <Mic className="w-3.5 h-3.5" /> Voice Booking (Hindi/EN)
+              </Link>
+              <Link to="/impact" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-green-700">
+                <Globe className="w-3.5 h-3.5" /> Community Impact
+              </Link>
             </div>
           )}
 
@@ -404,6 +527,27 @@ export function Navbar({ onOpenDemoScenarios }) {
               <Link to="/worker/welfare" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 Welfare & Insurance (Demo)
               </Link>
+              <Link to="/worker/utilization" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-slate-700">
+                <BarChart3 className="w-3.5 h-3.5" /> Utilization Dashboard
+              </Link>
+              <Link to="/worker/passport" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm font-semibold text-purple-700">
+                <Award className="w-3.5 h-3.5" /> Digital Skill Passport
+              </Link>
+              <Link to="/worker/wellness" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-red-600">
+                <Heart className="w-3.5 h-3.5" /> Wellness & Fatigue
+              </Link>
+              <Link to="/worker/dividend" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-amber-700">
+                <Coins className="w-3.5 h-3.5" /> Dividend Calculator
+              </Link>
+            </div>
+          )}
+
+          {!user && (
+            <div className="space-y-1">
+              <Link to="/worker/apply" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-2 py-1.5 text-sm font-semibold text-emerald-700">
+                <UserPlus className="w-4 h-4" />
+                Apply as Cooperative Worker
+              </Link>
             </div>
           )}
 
@@ -417,6 +561,9 @@ export function Navbar({ onOpenDemoScenarios }) {
               </Link>
               <Link to="/society/complaints" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 Grievance Board
+              </Link>
+              <Link to="/society/governance" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm font-semibold text-emerald-700">
+                <Vote className="w-3.5 h-3.5" /> Governance & Decisions
               </Link>
             </div>
           )}
