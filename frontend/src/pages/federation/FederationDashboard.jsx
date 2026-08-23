@@ -227,6 +227,20 @@ export function FederationDashboard() {
               >
                 <strong>{f.potentialShortage > 0 ? `Shortage: ${f.potentialShortage} Workers` : 'Workforce Balanced'}</strong> • {f.recommendation}
               </div>
+              {f.potentialShortage > 0 && (
+                <button
+                  onClick={async()=>{
+                    try{
+                      const from = f.district==='North District'?'East District':'Central Metro';
+                      const res=await api.mobilizeWorkforce({fromDistrict:from,toDistrict:f.district,serviceCategory:f.serviceCategory,count:Math.min(6,f.potentialShortage)});
+                      alert(res.message); fetchFederationData();
+                    }catch(e){alert(e.message)}
+                  }}
+                  className="w-full mt-2 bg-[#0f2e5a] hover:bg-[#1a4b8c] text-white py-1.5 rounded-lg text-xs font-bold flex items-center justify-center gap-1"
+                >
+                  <ArrowRight className="w-3 h-3" /> Mobilize {Math.min(6,f.potentialShortage)} Workers
+                </button>
+              )}
             </div>
           ))}
         </div>

@@ -73,6 +73,8 @@ export function submitWelfareClaim(req, res) {
       submittedAt: new Date().toISOString()
     };
 
+    store.create('welfareClaims', claimRecord);
+
     store.logAudit({
       actorName: req.user.name,
       actorRole: req.user.role,
@@ -81,12 +83,70 @@ export function submitWelfareClaim(req, res) {
       recordId: claimRecord.id,
       details: `Claim for ₹${claimRecord.requestedAmount} submitted by ${worker.name}`
     });
+    store.pushNotification({
+      title: 'New Welfare Claim Filed',
+      message: `${worker.name} requested ₹${claimRecord.requestedAmount} for ${claimRecord.claimPurpose}`,
+      targetRole: 'society_admin',
+      type: 'welfare'
+    });
 
     return res.status(201).json({
       success: true,
       message: 'Welfare benefit claim submitted to Cooperative Society Board for approval.',
       claim: claimRecord
     });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+export function getAllWelfareClaims(req, res) {
+  try {
+    const { societyId, workerId, status } = req.query;
+    let claims = store.getCollection('welfareClaims');
+    if (societyId) claims = claims.filter(c => c.societyId === societyId);
+    if (workerId) claims = claims.filter(c => c.workerId === workerId);
+    if (status) claims = claims.filter(c => c.status === status);
+    return res.json({ success: true, count: claims.length, claims });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+export function updateWelfareClaimStatus(req, res) {
+  try {
+    const { id } = req.params;
+    const { status, reviewNotes, approvedAmount } = req.body;
+    const claim = store.findById('welfareClaims', id);
+    if (!claim) return res.status(404).json({ success: false, message: 'Claim not found.' });
+
+    const allowed = ['Approved', 'Rejected', 'Under Review', 'Disbursed'];
+    const nextStatus = allowed.includes(status) ? status : 'Under Review';
+
+    const updated = store.findByIdAndUpdate('welfareClaims', id, {
+      status: nextStatus,
+      reviewNotes: reviewNotes || '',
+      approvedAmount: approvedAmount !== undefined ? Number(approvedAmount) : claim.requestedAmount,
+      reviewedBy: req.user.name,
+      reviewedAt: new Date().toISOString()
+    });
+
+    store.logAudit({
+      actorName: req.user.name,
+      actorRole: req.user.role,
+      action: 'WELFARE_CLAIM_REVIEWED',
+      module: 'Worker Welfare',
+      recordId: id,
+      details: `Claim ${claim.id} marked ${nextStatus} by ${req.user.name}`
+    });
+    store.pushNotification({
+      title: `Welfare Claim ${nextStatus}`,
+      message: `Your claim for ${claim.claimPurpose} is now ${nextStatus}`,
+      targetUserId: claim.workerId,
+      type: nextStatus === 'Approved' ? 'success' : 'info'
+    });
+
+    return res.json({ success: true, message: `Claim ${nextStatus}`, claim: updated });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }

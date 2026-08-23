@@ -349,3 +349,72 @@ export function getJobById(req, res) {
     return res.status(500).json({ success: false, message: err.message });
   }
 }
+
+export function cancelJob(req, res) {
+  try {
+    const { id } = req.params;
+    const { reason = 'Customer cancelled request' } = req.body;
+    const job = store.findById('jobs', id);
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found.' });
+    if ([JOB_STATUSES.COMPLETED, JOB_STATUSES.PAID, JOB_STATUSES.CANCELLED].includes(job.status)) {
+      return res.status(400).json({ success: false, message: `Cannot cancel job in ${job.status} state.` });
+    }
+    const updated = store.findByIdAndUpdate('jobs', id, {
+      status: JOB_STATUSES.CANCELLED,
+      cancellationReason: reason,
+      cancelledAt: new Date().toISOString(),
+      cancelledBy: req.user.name
+    });
+    if (job.workerId) {
+      const worker = store.findById('workers', job.workerId);
+      if (worker && worker.activeJobsCount > 0) {
+        store.findByIdAndUpdate('workers', worker.id, { activeJobsCount: Math.max(0, worker.activeJobsCount - 1) });
+      }
+    }
+    store.logAudit({ actorName: req.user.name, actorRole: req.user.role, action: 'JOB_CANCELLED', module: 'Job Lifecycle', recordId: id, details: `Job ${job.code} cancelled: ${reason}` });
+    store.pushNotification({ title: 'Job Cancelled', message: `Job ${job.code} cancelled: ${reason}`, targetUserId: job.workerId, type: 'warning' });
+    return res.json({ success: true, message: 'Job cancelled successfully.', job: updated });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+export function declineJobOffer(req, res) {
+  try {
+    const { id } = req.params;
+    const { reason = 'Worker unavailable' } = req.body;
+    const job = store.findById('jobs', id);
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found.' });
+    if (job.status !== JOB_STATUSES.OFFERED) {
+      return res.status(400).json({ success: false, message: 'Only OFFERED jobs can be declined.' });
+    }
+    const allWorkers = store.getCollection('workers');
+    const currentWorkerId = job.workerId;
+    const withoutCurrent = allWorkers.filter(w => w.id !== currentWorkerId);
+    const nextCandidate = withoutCurrent.filter(w => w.isOnline && w.primarySkill === job.serviceCategory).sort((a,b)=>(b.ratingAvg||0)-(a.ratingAvg||0))[0];
+    const updatePayload = {
+      status: nextCandidate ? JOB_STATUSES.OFFERED : JOB_STATUSES.MATCHING,
+      workerId: nextCandidate ? nextCandidate.id : null,
+      workerName: nextCandidate ? nextCandidate.name : 'Re-matching in progress...',
+      declineHistory: [...(job.declineHistory || []), { declinedBy: req.user.name, workerId: currentWorkerId, reason, at: new Date().toISOString() }]
+    };
+    const updated = store.findByIdAndUpdate('jobs', id, updatePayload);
+    store.logAudit({ actorName: req.user.name, actorRole: req.user.role, action: 'JOB_OFFER_DECLINED', module: 'Dispatch & Matching', recordId: id, details: `Worker declined offer for ${job.code}: ${reason}. Next: ${updatePayload.workerName}` });
+    return res.json({ success: true, message: nextCandidate ? `Offer declined. Re-assigned to ${nextCandidate.name}` : 'Offer declined. Searching for next available worker.', job: updated });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+export function resendOtp(req, res) {
+  try {
+    const { id } = req.params;
+    const job = store.findById('jobs', id);
+    if (!job) return res.status(404).json({ success: false, message: 'Job not found.' });
+    const newOtp = Math.floor(1000 + Math.random() * 9000).toString();
+    const updated = store.findByIdAndUpdate('jobs', id, { otp: newOtp });
+    store.logAudit({ actorName: req.user.name, actorRole: req.user.role, action: 'OTP_RESENT', module: 'Job Lifecycle', recordId: id, details: `New OTP generated for ${job.code}` });
+    return res.json({ success: true, message: 'New OTP generated and shared with customer.', otp: newOtp, job: updated });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}

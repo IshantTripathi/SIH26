@@ -228,6 +228,21 @@ export function CustomerDashboard() {
     }
   };
 
+  const handleCancelJob = async (jobId) => {
+    if (!window.confirm('Cancel this booking? Worker will be released.')) return;
+    try {
+      await api.cancelJob(jobId, { reason: 'Customer cancelled from dashboard' });
+      await fetchActiveJobs();
+    } catch (err) { alert(err.message); }
+  };
+
+  const handleResendOtp = async (jobId) => {
+    try {
+      const res = await api.resendOtp(jobId);
+      if (res.success) { alert(`New OTP: ${res.otp} — share only at service completion.`); await fetchActiveJobs(); }
+    } catch (err) { alert(err.message); }
+  };
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
       {/* Top Banner */}
@@ -611,17 +626,23 @@ export function CustomerDashboard() {
                     </div>
 
                     {/* Verification OTP Display */}
-                    {job.status !== 'COMPLETED' && job.status !== 'PAID' && job.otp && (
+                    {job.status !== 'COMPLETED' && job.status !== 'PAID' && job.status !== 'CANCELLED' && job.otp && (
                       <div className="flex items-center justify-between text-xs bg-amber-50 p-2 rounded border border-amber-200 text-amber-900">
                         <span>{t('customer.otpCode', 'Customer Completion OTP')}:</span>
-                        <span className="font-mono font-extrabold text-sm tracking-widest bg-white px-2 py-0.5 rounded border border-amber-300">
-                          {job.otp}
-                        </span>
+                        <div className="flex items-center gap-1">
+                          <span className="font-mono font-extrabold text-sm tracking-widest bg-white px-2 py-0.5 rounded border border-amber-300">
+                            {job.otp}
+                          </span>
+                          <button onClick={() => handleResendOtp(job.id)} className="text-[11px] text-blue-700 underline">Resend</button>
+                        </div>
                       </div>
                     )}
 
                     {/* Action buttons based on status */}
                     <div className="flex items-center justify-end space-x-2 pt-1">
+                      {['REQUESTED','MATCHING','OFFERED','ACCEPTED'].includes(job.status) && (
+                        <button onClick={() => handleCancelJob(job.id)} className="text-[11px] text-red-600 hover:text-red-800 underline">Cancel Booking</button>
+                      )}
                       {job.status === 'COMPLETED' && job.paymentStatus !== 'PAID' && (
                         <button
                           onClick={() => setPaymentModalJob(job)}

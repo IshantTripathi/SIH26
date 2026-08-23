@@ -224,6 +224,7 @@ export function WorkerDashboard() {
                   </div>
 
                   <div className="flex items-center justify-end space-x-2 pt-2 border-t border-slate-100">
+                    <button onClick={async()=>{try{await api.declineJobOffer(offer.id,{reason:'Worker busy'}); await fetchWorkerData();}catch(e){alert(e.message)}} } className="px-3 py-1.5 bg-slate-100 hover:bg-red-50 text-red-700 rounded-lg text-xs font-bold border border-slate-200">Decline</button>
                     <button
                       onClick={() => handleAdvanceJob(offer.id, 'ACCEPTED')}
                       disabled={updatingJobId === offer.id}

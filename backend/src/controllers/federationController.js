@@ -79,3 +79,54 @@ export function getFederationDashboard(req, res) {
     return res.status(500).json({ success: false, message: err.message });
   }
 }
+
+export function mobilizeWorkforce(req, res) {
+  try {
+    const { fromDistrict, toDistrict, serviceCategory = 'Plumbing', count = 4 } = req.body;
+    if (!fromDistrict || !toDistrict) {
+      return res.status(400).json({ success: false, message: 'fromDistrict and toDistrict are required.' });
+    }
+    const num = Math.min(10, Math.max(1, Number(count) || 4));
+    // Simulate mobilization by logging audit and adjusting demandData shortage
+    const demandList = store.getCollection('demandData');
+    const target = demandList.find(d => d.district === toDistrict && d.serviceCategory === serviceCategory);
+    if (target) {
+      target.activeWorkersAvailable = (target.activeWorkersAvailable || 0) + num;
+      target.potentialShortage = Math.max(0, (target.predictedDemand || 0) - target.activeWorkersAvailable);
+      if (target.potentialShortage === 0) target.recommendation = 'Workforce deficit resolved after mobilization. Monitor for next shift.';
+      else target.recommendation = `Partial mobilization: moved ${num} workers; remaining shortage ${target.potentialShortage}.`;
+    }
+    store.logAudit({
+      actorName: req.user.name,
+      actorRole: req.user.role,
+      action: 'WORKFORCE_MOBILIZED',
+      module: 'Federation Governance',
+      recordId: `${fromDistrict}->${toDistrict}`,
+      details: `Mobilized ${num} certified ${serviceCategory} workers from ${fromDistrict} to ${toDistrict} for demand surge.`
+    });
+    store.pushNotification({
+      title: 'Workforce Mobilization Executed',
+      message: `${num} ${serviceCategory} workers mobilized from ${fromDistrict} to ${toDistrict}`,
+      targetRole: 'society_admin',
+      type: 'success'
+    });
+    return res.json({ success: true, message: `Successfully mobilized ${num} workers from ${fromDistrict} to ${toDistrict}`, mobilizedCount: num, updatedDemand: target || null });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}
+
+export function getNotifications(req, res) {
+  try {
+    const { limit = 20 } = req.query;
+    const user = req.user;
+    let notes = store.getCollection('notifications') || [];
+    // filter to relevant: global audit + targeted
+    if (user.role === 'worker') {
+      notes = notes.filter(n => !n.targetRole || n.targetRole === 'worker' || n.targetUserId === user.workerId || n.targetUserId === user.id || n.action?.includes('JOB'));
+    }
+    return res.json({ success: true, count: notes.length, notifications: notes.slice(0, Number(limit)) });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: err.message });
+  }
+}

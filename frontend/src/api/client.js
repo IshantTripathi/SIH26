@@ -48,6 +48,9 @@ export const api = {
   updateJobStatus: (id, payload) => request(`/jobs/${id}/status`, { method: 'PATCH', body: JSON.stringify(payload) }),
   processPayment: (id, payload) => request(`/jobs/${id}/payment`, { method: 'POST', body: JSON.stringify(payload) }),
   submitRating: (id, payload) => request(`/jobs/${id}/rate`, { method: 'POST', body: JSON.stringify(payload) }),
+  cancelJob: (id, payload = {}) => request(`/jobs/${id}/cancel`, { method: 'POST', body: JSON.stringify(payload) }),
+  declineJobOffer: (id, payload = {}) => request(`/jobs/${id}/decline`, { method: 'POST', body: JSON.stringify(payload) }),
+  resendOtp: (id) => request(`/jobs/${id}/resend-otp`, { method: 'POST' }),
 
   // Allocation & Problem Classifier
   simulateAllocation: (params) => request('/allocation/simulate', { method: 'POST', body: JSON.stringify(params) }),
@@ -66,6 +69,11 @@ export const api = {
 
   // Federation Admin
   getFederationDashboard: (id) => request(id ? `/federation/dashboard/${id}` : '/federation/dashboard'),
+  mobilizeWorkforce: (payload) => request('/federation/mobilize', { method: 'POST', body: JSON.stringify(payload) }),
+  getNotifications: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/federation/notifications${query ? `?${query}` : ''}`);
+  },
 
   // Analytics & Demand Forecasting
   getDemandAnalytics: (params = {}) => {
@@ -80,6 +88,11 @@ export const api = {
   },
   getMyWelfare: () => request('/welfare/my-welfare'),
   submitWelfareClaim: (payload) => request('/welfare/claim', { method: 'POST', body: JSON.stringify(payload) }),
+  getWelfareClaims: (params = {}) => {
+    const query = new URLSearchParams(params).toString();
+    return request(`/welfare/claims${query ? `?${query}` : ''}`);
+  },
+  updateWelfareClaimStatus: (id, payload) => request(`/welfare/claims/${id}/status`, { method: 'PATCH', body: JSON.stringify(payload) }),
 
   // Complaints
   getComplaints: (params = {}) => {

@@ -27,6 +27,8 @@ class DataStore {
     this.complaints = JSON.parse(JSON.stringify(initialComplaints));
     this.demandData = JSON.parse(JSON.stringify(initialDemandData));
     this.auditLogs = JSON.parse(JSON.stringify(initialAuditLogs));
+    this.welfareClaims = [];
+    this.notifications = [];
   }
 
   // Generic collection accessor
@@ -107,7 +109,25 @@ class DataStore {
       timestamp: new Date().toISOString()
     };
     this.auditLogs.unshift(entry);
+    // also push as notification for relevant users
+    this.notifications.unshift({ ...entry, read: false });
+    if (this.notifications.length > 100) this.notifications.pop();
     return entry;
+  }
+
+  pushNotification({ title, message, targetRole, targetUserId, type = 'info' }) {
+    const note = {
+      id: `NOTIF-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+      title,
+      message,
+      targetRole,
+      targetUserId,
+      type,
+      read: false,
+      timestamp: new Date().toISOString()
+    };
+    this.notifications.unshift(note);
+    return note;
   }
 }
 
