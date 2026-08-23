@@ -18,5 +18,8 @@
     "fair-work-allocation"
   ],
   "author": "SIH26089 Development Team",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "puppeteer": "^25.8.0"
+  }
 }
