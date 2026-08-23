@@ -130,6 +130,7 @@ export const api = {
     return request(`/system/logs${query ? `?${query}` : ''}`);
   },
   getServices: () => request('/system/services'),
+  getWorkers: (category) => request(`/system/workers${category ? `?category=${encodeURIComponent(category)}` : ''}`),
   addService: (payload) => request('/system/services', { method: 'POST', body: JSON.stringify(payload) }),
 
   // Loyalty & Tier System

@@ -27,9 +27,24 @@ export default function ProfilePage() {
 
   useEffect(() => {
     fetchBookings();
-    const interval = setInterval(fetchWorkerLocations, 5000);
-    return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    if (bookings.length === 0) return;
+    const interval = setInterval(() => {
+      bookings.forEach(async (booking) => {
+        if (['ON_THE_WAY', 'ACCEPTED'].includes(booking.status) && booking.workerId) {
+          try {
+            const res = await api.getJobWorkerLocation(booking.id);
+            if (res.success && res.location) {
+              setWorkerLocations(prev => ({ ...prev, [booking.id]: res.location }));
+            }
+          } catch (err) {}
+        }
+      });
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [bookings]);
 
   const fetchBookings = async () => {
     try {
@@ -41,22 +56,6 @@ export default function ProfilePage() {
       console.error('Failed to fetch bookings:', err);
     } finally {
       setLoading(false);
-    }
-  };
-
-  const fetchWorkerLocations = async () => {
-    for (const booking of bookings) {
-      if (['ON_THE_WAY', 'ACCEPTED'].includes(booking.status) && booking.workerId) {
-        try {
-          const res = await api.getJobWorkerLocation(booking.id);
-          if (res.success && res.location) {
-            setWorkerLocations(prev => ({
-              ...prev,
-              [booking.id]: res.location
-            }));
-          }
-        } catch (err) {}
-      }
     }
   };
 

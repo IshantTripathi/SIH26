@@ -330,6 +330,7 @@ app.patch('/api/complaints/:id/status', authenticate, (req,res) => { const c=sto
 // Audit
 app.get('/api/system/logs', authenticate, (req,res) => { return res.json({success:true,logs:store.auditLogs.slice(0,50)}); });
 app.get('/api/system/services', (req,res) => { return res.json({success:true,services:store.services}); });
+app.get('/api/system/workers', (req,res) => { const category=req.query.category; let workers=store.getCollection('workers').filter(w=>w.isOnline!==false); if(category)workers=workers.filter(w=>(w.trade||'').toLowerCase().includes(category.toLowerCase())||(w.skills||[]).some(s=>s.toLowerCase().includes(category.toLowerCase()))); return res.json({success:true,workers:workers.map(w=>({id:w.id,name:w.name,trade:w.trade,experience:w.experience,rating:w.rating||4.7,skills:w.skills||[],isOnline:w.isOnline!==false,avatar:w.avatar||''}))}); });
 app.post('/api/system/services', authenticate, (req,res) => { const s=store.create('services',req.body); return res.json({success:true,service:s}); });
 
 // Allocation
