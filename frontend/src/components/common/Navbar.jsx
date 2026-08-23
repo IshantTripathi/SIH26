@@ -324,6 +324,16 @@ export function Navbar({ onOpenDemoScenarios }) {
                     >
                       {t('society.complaints', 'Grievance Board')}
                     </Link>
+                    <Link
+                      to="/society/governance"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/society/governance'
+                          ? 'bg-blue-50 text-blue-900 font-semibold'
+                          : 'text-slate-700 hover:text-blue-900 hover:bg-slate-50'
+                      }`}
+                    >
+                      Governance
+                    </Link>
                   </>
                 )}
 
@@ -543,6 +553,18 @@ export function Navbar({ onOpenDemoScenarios }) {
             <div className="space-y-1">
               <Link to="/customer" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-blue-900">
                 Book & Request
+              </Link>
+              <Link to="/customer/househelp" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Househelp
+              </Link>
+              <Link to="/customer/beauty-spa" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Beauty & Spa
+              </Link>
+              <Link to="/customer/manicure-pedicure" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Nails
+              </Link>
+              <Link to="/customer/profile" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Profile
               </Link>
               <Link to="/customer/bookings" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 My Bookings & Invoices
