@@ -142,6 +142,8 @@ export function scoreWorkerForJob(worker, jobRequest) {
       if (accepted?.timestamp && arrived?.timestamp) {
         const diffMin = (new Date(arrived.timestamp) - new Date(accepted.timestamp)) / 60000;
         if (diffMin <= 20) onTimeCount++;
+      } else if ((j.rating?.punctuality || 5) >= 4) {
+        onTimeCount++;
       }
     }
     punctualityPercent = Math.round((onTimeCount / workerJobs.length) * 100);

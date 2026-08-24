@@ -235,5 +235,10 @@ export const api = {
   // Innovation 8: AR Repair Guidance
   getRepairGuide: (category, issueType) => request(`/ar-guidance/guide/${encodeURIComponent(category)}${issueType ? `/${encodeURIComponent(issueType)}` : ''}`),
   getAllRepairGuides: () => request('/ar-guidance/guides'),
-  getToolRecommendations: (category) => request(`/ar-guidance/tools/${encodeURIComponent(category)}`)
+  getToolRecommendations: (category) => request(`/ar-guidance/tools/${encodeURIComponent(category)}`),
+
+  // Gemini AI Assistant
+  chatWithAi: (payload) => request('/ai/chat', { method: 'POST', body: JSON.stringify(payload) }),
+  getAiSuggestions: () => request('/ai/suggestions'),
+  getAiStatus: () => request('/ai/status')
 };

@@ -4,6 +4,7 @@ import { useAuth } from './context/AuthContext';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { DemoScenarioModal } from './components/demo/DemoScenarioModal';
+import { AiChatWidget } from './components/common/AiChatWidget';
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
@@ -95,6 +96,9 @@ export function App() {
         isOpen={demoModalOpen}
         onClose={() => setDemoModalOpen(false)}
       />
+
+      {/* Global AI Assistant Floating Widget */}
+      <AiChatWidget />
     </div>
   );
 }

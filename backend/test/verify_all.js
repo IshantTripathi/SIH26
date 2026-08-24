@@ -531,12 +531,42 @@ async function runVerification() {
     assert(typeof participationRes.data.summary.totalMeetings === 'number', 'Meeting count in summary');
 
     // 33. Worker Utilization & Welfare Dashboard API
-    console.log('\n[33/33] Verifying Worker Utilization & Welfare Dashboard API...');
+    console.log('\n[33/34] Verifying Worker Utilization & Welfare Dashboard API...');
     const earningsRes = await makeRequest('/worker/earnings', { token: workerToken });
     assert(earningsRes.data.success === true, 'Worker earnings endpoint works');
     assert(typeof earningsRes.data.summary.completedJobsCount === 'number', 'Completed jobs count present');
     assert(typeof earningsRes.data.summary.grossTotal === 'number', 'Gross total computed');
     assert(typeof earningsRes.data.summary.netTotal === 'number', 'Net total computed');
+
+    // 34. Gemini AI Assistant & Live Tool Execution
+    console.log('\n[34/34] Verifying Gemini AI Assistant & Live Tool Execution...');
+    const aiStatusRes = await makeRequest('/ai/status');
+    assert(aiStatusRes.data.success === true, 'AI status endpoint operational');
+    assert(aiStatusRes.data.status === 'OPERATIONAL', 'AI service marked OPERATIONAL');
+    assert(Array.isArray(aiStatusRes.data.capabilities), 'AI capabilities list present');
+
+    const aiSuggestionsRes = await makeRequest('/ai/suggestions', { token: custToken });
+    assert(aiSuggestionsRes.data.success === true, 'Role suggestions endpoint works for customer');
+    assert(Array.isArray(aiSuggestionsRes.data.suggestions), 'Suggestions list returned');
+    assert(aiSuggestionsRes.data.role === 'customer', 'Suggestions mapped to customer role');
+
+    // Customer query querying live plumber database
+    const aiChatRes = await makeRequest('/ai/chat', {
+      method: 'POST',
+      token: custToken,
+      body: JSON.stringify({ message: 'Are there any verified plumbers available nearby?' })
+    });
+    assert(aiChatRes.data.success === true, 'AI chat endpoint responded successfully');
+    assert(typeof aiChatRes.data.reply === 'string' && aiChatRes.data.reply.length > 10, 'AI generated structured reply');
+    assert(Array.isArray(aiChatRes.data.toolsUsed), 'AI tools list tracked');
+
+    // Reject empty message
+    const emptyRes = await makeRequest('/ai/chat', {
+      method: 'POST',
+      token: custToken,
+      body: JSON.stringify({ message: '   ' })
+    });
+    assert(emptyRes.status === 400, 'AI chat rejects empty message with 400');
 
     console.log('\n====================================================');
     console.log(` TEST SUMMARY: ${passed} PASSED, ${failed} FAILED`);
