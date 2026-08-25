@@ -13,7 +13,7 @@ import {
   ArrowRight
 } from 'lucide-react';
 
-const GOOGLE_CLIENT_ID = '975487436727-abc123def456.apps.googleusercontent.com';
+const GOOGLE_CLIENT_ID = '442024550913-g2phpddnpr37s4pcfmcqvcku56s7en45.apps.googleusercontent.com';
 
 export function LoginPage() {
   const [identifier, setIdentifier] = useState('');
