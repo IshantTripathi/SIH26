@@ -40,6 +40,8 @@ import { WorkerUtilizationPage } from './pages/worker/WorkerUtilizationPage';
 import { SkillPassportPage } from './pages/worker/SkillPassportPage';
 import { WellnessPage } from './pages/worker/WellnessPage';
 import { DividendPage } from './pages/worker/DividendPage';
+import { AadhaarVerificationPage } from './pages/worker/AadhaarVerificationPage';
+import { TrainingPage } from './pages/worker/TrainingPage';
 import { GovernancePage } from './pages/society/GovernancePage';
 import { SocietyDashboard } from './pages/society/SocietyDashboard';
 import { SocietyWorkersPage } from './pages/society/SocietyWorkersPage';
@@ -97,6 +99,8 @@ export function App() {
           <Route path="/worker/passport" element={<SkillPassportPage />} />
           <Route path="/worker/wellness" element={<WellnessPage />} />
           <Route path="/worker/dividend" element={<DividendPage />} />
+          <Route path="/worker/aadhaar" element={<AadhaarVerificationPage />} />
+          <Route path="/worker/training" element={<TrainingPage />} />
 
           {/* Society Admin Routes */}
           <Route path="/society" element={<SocietyDashboard />} />

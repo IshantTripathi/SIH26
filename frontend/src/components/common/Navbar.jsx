@@ -27,7 +27,9 @@ import {
   Award,
   Heart,
   Coins,
-  Globe
+  Globe,
+  Shield,
+  BookOpen
 } from 'lucide-react';
 
 export function Navbar({ onOpenDemoScenarios }) {
@@ -288,6 +290,26 @@ export function Navbar({ onOpenDemoScenarios }) {
                       }`}
                     >
                       <Coins className="w-3.5 h-3.5" /> Dividend
+                    </Link>
+                    <Link
+                      to="/worker/aadhaar"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/aadhaar'
+                          ? 'bg-blue-50 text-blue-900 font-semibold'
+                          : 'text-slate-700 hover:text-blue-900 hover:bg-blue-50'
+                      }`}
+                    >
+                      <Shield className="w-3.5 h-3.5" /> Aadhaar Verify
+                    </Link>
+                    <Link
+                      to="/worker/training"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/training'
+                          ? 'bg-emerald-50 text-emerald-900 font-semibold'
+                          : 'text-slate-700 hover:text-emerald-900 hover:bg-emerald-50'
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5" /> Training
                     </Link>
                   </>
                 )}
@@ -600,6 +622,12 @@ export function Navbar({ onOpenDemoScenarios }) {
               </Link>
               <Link to="/worker/dividend" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-amber-700">
                 <Coins className="w-3.5 h-3.5" /> Dividend Calculator
+              </Link>
+              <Link to="/worker/aadhaar" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-blue-700">
+                <Shield className="w-3.5 h-3.5" /> Aadhaar & DigiLocker
+              </Link>
+              <Link to="/worker/training" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-emerald-700">
+                <BookOpen className="w-3.5 h-3.5" /> Training Courses
               </Link>
             </div>
           )}

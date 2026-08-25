@@ -258,5 +258,21 @@ export const api = {
   // Gemini AI Assistant
   chatWithAi: (payload) => request('/ai/chat', { method: 'POST', body: JSON.stringify(payload) }),
   getAiSuggestions: () => request('/ai/suggestions'),
-  getAiStatus: () => request('/ai/status')
+  getAiStatus: () => request('/ai/status'),
+
+  // Aadhaar & DigiLocker Verification
+  initiateAadhaar: (payload) => request('/aadhaar/initiate', { method: 'POST', body: JSON.stringify(payload) }),
+  verifyAadhaarOtp: (payload) => request('/aadhaar/verify-otp', { method: 'POST', body: JSON.stringify(payload) }),
+  connectDigiLocker: () => request('/aadhaar/digilocker/connect', { method: 'POST' }),
+  getAadhaarStatus: () => request('/aadhaar/status'),
+  getAadhaarCertificate: (workerId) => request(`/aadhaar/certificate/${workerId}`),
+
+  // Worker Training Platform
+  getTrainingCourses: (category) => request(`/training/courses${category ? `?category=${encodeURIComponent(category)}` : ''}`),
+  getTrainingCourse: (courseId) => request(`/training/courses/${courseId}`),
+  enrollCourse: (courseId) => request('/training/enroll', { method: 'POST', body: JSON.stringify({ courseId }) }),
+  getMyCourses: () => request('/training/my-courses'),
+  updateTrainingProgress: (courseId, moduleId) => request('/training/progress', { method: 'POST', body: JSON.stringify({ courseId, moduleId }) }),
+  submitQuiz: (courseId, score) => request('/training/quiz', { method: 'POST', body: JSON.stringify({ courseId, score }) }),
+  getTrainingStats: () => request('/training/stats')
 };

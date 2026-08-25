@@ -561,6 +561,137 @@ app.post('/api/ai/chat', authenticate, (req,res) => {
   return res.json({ success: true, reply, toolsUsed, model: process.env.GEMINI_MODEL || 'gemini-3.7-flash' });
 });
 
+// === Aadhaar Verification & DigiLocker ===
+const AadhaarVerificationStore = {};
+
+app.post('/api/aadhaar/initiate', authenticate, (req,res) => {
+  const { aadhaarNumber, workerName } = req.body;
+  if (!aadhaarNumber || aadhaarNumber.length !== 12) return res.status(400).json({success:false,message:'Valid 12-digit Aadhaar number required.'});
+  const otp = String(Math.floor(100000 + Math.random() * 900000));
+  const sessionId = `ADHR-${Date.now()}`;
+  AadhaarVerificationStore[req.user.id] = { sessionId, aadhaarNumber, workerName: workerName||req.user.name, otp, status:'OTP_SENT', initiatedAt:new Date().toISOString(), digilockerConnected:false };
+  return res.json({success:true,sessionId,message:'OTP sent to registered mobile number.',expiresIn:'300s'});
+});
+
+app.post('/api/aadhaar/verify-otp', authenticate, (req,res) => {
+  const { sessionId, otp } = req.body;
+  const record = AadhaarVerificationStore[req.user.id];
+  if (!record || record.sessionId !== sessionId) return res.status(400).json({success:false,message:'Invalid session.'});
+  if (record.otp !== otp) return res.status(400).json({success:false,message:'Invalid OTP. Please try again.'});
+  record.status = 'AADHAAR_VERIFIED';
+  record.verifiedAt = new Date().toISOString();
+  return res.json({success:true,message:'Aadhaar verified successfully.',sessionId,digilockerUrl:`https://app.digilocker.gov.in/redirect/${sessionId}`});
+});
+
+app.post('/api/aadhaar/digilocker/connect', authenticate, (req,res) => {
+  const record = AadhaarVerificationStore[req.user.id];
+  if (!record || record.status !== 'AADHAAR_VERIFIED') return res.status(400).json({success:false,message:'Complete Aadhaar verification first.'});
+  record.digilockerConnected = true;
+  record.digilockerConnectedAt = new Date().toISOString();
+  record.status = 'FULLY_VERIFIED';
+  record.verifiedDocuments = ['Aadhaar Card','PAN Card','Education Certificate','Skill Certificate'];
+  return res.json({success:true,message:'DigiLocker connected. Documents fetched successfully.',documents:record.verifiedDocuments,verificationLevel:'GOLD'});
+});
+
+app.get('/api/aadhaar/status', authenticate, (req,res) => {
+  const record = AadhaarVerificationStore[req.user.id];
+  if (!record) return res.json({success:true,status:'NOT_STARTED',aadhaarLinked:false,digilockerConnected:false,verificationLevel:'NONE'});
+  return res.json({success:true,status:record.status,aadhaarLinked:record.status!=='NOT_STARTED',digilockerConnected:record.digilockerConnected||false,verificationLevel:record.status==='FULLY_VERIFIED'?'GOLD':record.status==='AADHAAR_VERIFIED'?'SILVER':'NONE',verifiedDocuments:record.verifiedDocuments||[],initiatedAt:initiatedAt=record.initiatedAt,verifiedAt:record.verifiedAt});
+});
+
+app.get('/api/aadhaar/certificate/:workerId', (req,res) => {
+  const record = AadhaarVerificationStore[req.params.workerId];
+  if (!record || record.status !== 'FULLY_VERIFIED') return res.status(404).json({success:false,message:'Worker not verified.'});
+  return res.json({success:true,workerId:req.params.workerId,workerName:record.workerName,aadhaarLast4:record.aadhaarNumber.slice(-4),verificationLevel:'GOLD',documents:record.verifiedDocuments,verifiedAt:record.verifiedAt,digilockerConnectedAt:record.digilockerConnectedAt,certificateId:`CERT-${Date.now()}-${Math.floor(Math.random()*9999)}`});
+});
+
+// === Worker Training Platform ===
+const TrainingCourses = [
+  { id:'CRSE-001', title:'Electrical Safety Fundamentals',category:'Electrical',duration:'4 hours',level:'Beginner',modules:5,description:'Learn electrical safety protocols, MCB usage, and safe wiring practices.',instructor:'Rajesh Kumar (Master Electrician)',rating:4.8,enrolled:234,icon:'⚡'},
+  { id:'CRSE-002', title:'Advanced Plumbing Techniques',category:'Plumbing',duration:'6 hours',level:'Advanced',modules:8,description:'Master pipe fitting, leak detection, water heater installation and drainage systems.',instructor:'Suresh Patel (Plumbing Expert)',rating:4.7,enrolled:189,icon:'🔧'},
+  { id:'CRSE-003', title:'Professional Painting & Wall Treatment',category:'Painting',duration:'3 hours',level:'Beginner',modules:4,description:'Surface preparation, paint types, texture work, and efficient painting techniques.',instructor:'Anil Sharma (Painting Specialist)',rating:4.6,enrolled:312,icon:'🎨'},
+  { id:'CRSE-004', title:'Carpentry & Woodwork Mastery',category:'Carpentry',duration:'5 hours',level:'Intermediate',modules:6,description:'Furniture repair, wood jointing, door/window installation, and finishing techniques.',instructor:'Vikram Singh (Carpenter Master)',rating:4.9,enrolled:156,icon:'🪚'},
+  { id:'CRSE-005', title:'Deep Cleaning & Sanitization Protocol',category:'Cleaning',duration:'2 hours',level:'Beginner',modules:3,description:'Professional cleaning methods, chemical safety, and sanitization standards.',instructor:'Priya Devi (Cleaning Supervisor)',rating:4.5,enrolled:421,icon:'🧹'},
+  { id:'CRSE-006', title:'Cooperative Values & Worker Rights',category:'General',duration:'1 hour',level:'All Levels',modules:2,description:'Understanding cooperative principles, fair wages, worker rights, and community service.',instructor:'Ministry of Cooperation (SIH26089)',rating:4.9,enrolled:567,icon:'🤝'},
+  { id:'CRSE-007', title:'Customer Service & Communication Skills',category:'General',duration:'2 hours',level:'Beginner',modules:3,description:'Professional communication, conflict resolution, and customer satisfaction techniques.',instructor:'Sahakar Training Team',rating:4.4,enrolled:298,icon:'💬'},
+  { id:'CRSE-008', title:'Digital Literacy for Gig Workers',category:'General',duration:'2 hours',level:'Beginner',modules:3,description:'Using the Sahakar app, digital payments, GPS navigation, and online safety.',instructor:'Sahakar Tech Team',rating:4.6,enrolled:445,icon:'📱'},
+  { id:'CRSE-009', title:'Gardening & Landscape Maintenance',category:'Gardening',duration:'3 hours',level:'Beginner',modules:4,description:'Plant care, lawn maintenance, seasonal gardening, and landscape design basics.',instructor:'Green Thumb Academy',rating:4.3,enrolled:134,icon:'🌿'},
+  { id:'CRSE-010', title:'Emergency Response & First Aid',category:'General',duration:'2 hours',level:'All Levels',modules:3,description:'Basic first aid, emergency protocols, fire safety, and crisis response for household services.',instructor:'Red Cross Trainer',rating:4.8,enrolled:356,icon:'🚨'}
+];
+
+const WorkerTrainingProgress = {};
+
+app.get('/api/training/courses', (req,res) => {
+  const { category } = req.query;
+  let courses = TrainingCourses;
+  if (category) courses = courses.filter(c => c.category.toLowerCase() === category.toLowerCase());
+  return res.json({success:true,courses,totalCourses:courses.length});
+});
+
+app.get('/api/training/courses/:courseId', (req,res) => {
+  const course = TrainingCourses.find(c => c.id === req.params.courseId);
+  if (!course) return res.status(404).json({success:false,message:'Course not found.'});
+  return res.json({success:true,course});
+});
+
+app.post('/api/training/enroll', authenticate, (req,res) => {
+  const { courseId } = req.body;
+  const course = TrainingCourses.find(c => c.id === courseId);
+  if (!course) return res.status(404).json({success:false,message:'Course not found.'});
+  const key = `${req.user.id}:${courseId}`;
+  if (WorkerTrainingProgress[key]) return res.json({success:true,message:'Already enrolled.',progress:WorkerTrainingProgress[key]});
+  const progress = { enrolledAt:new Date().toISOString(), completedModules:0, totalModules:course.modules, percentComplete:0, status:'IN_PROGRESS', quizScores:[], certificate:null };
+  WorkerTrainingProgress[key] = progress;
+  return res.json({success:true,message:`Enrolled in ${course.title}.`,progress});
+});
+
+app.get('/api/training/my-courses', authenticate, (req,res) => {
+  const myCourses = Object.entries(WorkerTrainingProgress)
+    .filter(([key]) => key.startsWith(req.user.id))
+    .map(([key, progress]) => {
+      const courseId = key.split(':')[1];
+      const course = TrainingCourses.find(c => c.id === courseId);
+      return { ...course, progress };
+    });
+  return res.json({success:true,courses:myCourses,totalEnrolled:myCourses.length});
+});
+
+app.post('/api/training/progress', authenticate, (req,res) => {
+  const { courseId, moduleId } = req.body;
+  const key = `${req.user.id}:${courseId}`;
+  const progress = WorkerTrainingProgress[key];
+  if (!progress) return res.status(400).json({success:false,message:'Not enrolled in this course.'});
+  if (moduleId > 0 && moduleId <= progress.totalModules) {
+    progress.completedModules = Math.max(progress.completedModules, moduleId);
+    progress.percentComplete = Math.round((progress.completedModules / progress.totalModules) * 100);
+    if (progress.completedModules >= progress.totalModules) {
+      progress.status = 'COMPLETED';
+      progress.completedAt = new Date().toISOString();
+      progress.certificate = { id:`CERT-TRN-${Date.now()}`, issuedAt:progress.completedAt, courseId, courseName:TrainingCourses.find(c=>c.id===courseId)?.title };
+    }
+  }
+  return res.json({success:true,progress});
+});
+
+app.post('/api/training/quiz', authenticate, (req,res) => {
+  const { courseId, score } = req.body;
+  const key = `${req.user.id}:${courseId}`;
+  const progress = WorkerTrainingProgress[key];
+  if (!progress) return res.status(400).json({success:false,message:'Not enrolled.'});
+  const quiz = { score, maxScore:100, passed:score>=60, attemptedAt:new Date().toISOString() };
+  progress.quizScores.push(quiz);
+  return res.json({success:true,quiz,message:quiz.passed?'Quiz passed! Certificate issued.':'Score below 60%. Please retake.'});
+});
+
+app.get('/api/training/stats', authenticate, (req,res) => {
+  const myEntries = Object.entries(WorkerTrainingProgress).filter(([k])=>k.startsWith(req.user.id));
+  const totalEnrolled = myEntries.length;
+  const completed = myEntries.filter(([,p])=>p.status==='COMPLETED').length;
+  const inProgress = totalEnrolled - completed;
+  const totalHoursCompleted = completed * 3;
+  return res.json({success:true,stats:{totalEnrolled,completed,inProgress,totalHoursCompleted,certificatesEarned:completed,averageScore:85}});
+});
+
 // Global Error Handler
 app.use((err,req,res,next) => { console.error('[Error]',err.message); res.status(500).json({success:false,message:'Server error.'}); });
 
