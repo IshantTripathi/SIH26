@@ -841,7 +841,7 @@ export function CustomerDashboard() {
                       }
                       setSubmittingJob(false);
                     }}
-                    disabled={submittingJob || !detectedCategory}
+                    disabled={submittingJob}
                     className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-lg animate-pulse"
                   >
                     <AlertTriangle className="w-4 h-4" />
