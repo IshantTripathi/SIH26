@@ -61,6 +61,73 @@ export function login(req, res) {
   }
 }
 
+export function googleLogin(req, res) {
+  try {
+    const { token } = req.body;
+    if (!token) {
+      return res.status(400).json({ success: false, message: 'Google token required.' });
+    }
+
+    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    const email = payload.email;
+    const name = payload.name || payload.given_name || 'Google User';
+    const picture = payload.picture || '';
+    const googleId = payload.sub;
+
+    let user = store.findOne('users', { email });
+    if (!user) {
+      user = store.create('users', {
+        id: `USR-GOOGLE-${Date.now()}`,
+        name,
+        email,
+        password: 'google-oauth-no-password',
+        role: 'customer',
+        mobile: '',
+        location: { lat: 28.6140, lng: 77.2095 },
+        address: 'Google Account',
+        customerType: 'Household',
+        authProvider: 'google',
+        googleId,
+        picture
+      });
+    }
+
+    const jwtToken = jwt.sign(
+      { id: user.id, email: user.email, role: user.role },
+      JWT_SECRET,
+      { expiresIn: '7d' }
+    );
+
+    let linkedProfile = null;
+    if (user.role === ROLES.WORKER) {
+      linkedProfile = store.findById('workers', user.workerId);
+    } else if (user.role === ROLES.SOCIETY_ADMIN) {
+      linkedProfile = store.findById('societies', user.societyId);
+    } else if (user.role === ROLES.FEDERATION_ADMIN) {
+      linkedProfile = store.findById('federations', user.federationId);
+    }
+
+    store.logAudit({
+      actorName: user.name,
+      actorRole: user.role,
+      action: 'USER_LOGIN_GOOGLE',
+      module: 'Authentication',
+      recordId: user.id,
+      details: `User logged in via Google OAuth`
+    });
+
+    return res.json({
+      success: true,
+      message: 'Google login successful',
+      token: jwtToken,
+      user,
+      linkedProfile
+    });
+  } catch (err) {
+    return res.status(401).json({ success: false, message: 'Invalid Google token.' });
+  }
+}
+
 export function register(req, res) {
   try {
     const { name, email, mobile, password, role, customerType, institutionName, institutionType, contactPerson, ...extra } = req.body;

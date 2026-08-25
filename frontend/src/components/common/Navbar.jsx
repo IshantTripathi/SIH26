@@ -27,7 +27,9 @@ import {
   Award,
   Heart,
   Coins,
-  Globe
+  Globe,
+  Shield,
+  BookOpen
 } from 'lucide-react';
 
 export function Navbar({ onOpenDemoScenarios }) {
@@ -184,6 +186,46 @@ export function Navbar({ onOpenDemoScenarios }) {
                     >
                       <Globe className="w-3.5 h-3.5" /> Impact
                     </Link>
+                    <Link
+                      to="/customer/househelp"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/househelp'
+                          ? 'bg-green-50 text-green-900 font-semibold'
+                          : 'text-slate-700 hover:text-green-900 hover:bg-green-50'
+                      }`}
+                    >
+                      🏠 Househelp
+                    </Link>
+                    <Link
+                      to="/customer/beauty-spa"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/beauty-spa'
+                          ? 'bg-pink-50 text-pink-900 font-semibold'
+                          : 'text-slate-700 hover:text-pink-900 hover:bg-pink-50'
+                      }`}
+                    >
+                      💆 Beauty & Spa
+                    </Link>
+                    <Link
+                      to="/customer/manicure-pedicure"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/manicure-pedicure'
+                          ? 'bg-purple-50 text-purple-900 font-semibold'
+                          : 'text-slate-700 hover:text-purple-900 hover:bg-purple-50'
+                      }`}
+                    >
+                      💅 Nails
+                    </Link>
+                    <Link
+                      to="/customer/profile"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/customer/profile'
+                          ? 'bg-blue-50 text-blue-900 font-semibold'
+                          : 'text-slate-700 hover:text-blue-900 hover:bg-blue-50'
+                      }`}
+                    >
+                      👤 Profile
+                    </Link>
                   </>
                 )}
 
@@ -249,6 +291,26 @@ export function Navbar({ onOpenDemoScenarios }) {
                     >
                       <Coins className="w-3.5 h-3.5" /> Dividend
                     </Link>
+                    <Link
+                      to="/worker/aadhaar"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/aadhaar'
+                          ? 'bg-blue-50 text-blue-900 font-semibold'
+                          : 'text-slate-700 hover:text-blue-900 hover:bg-blue-50'
+                      }`}
+                    >
+                      <Shield className="w-3.5 h-3.5" /> Aadhaar Verify
+                    </Link>
+                    <Link
+                      to="/worker/training"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors flex items-center gap-1 ${
+                        location.pathname === '/worker/training'
+                          ? 'bg-emerald-50 text-emerald-900 font-semibold'
+                          : 'text-slate-700 hover:text-emerald-900 hover:bg-emerald-50'
+                      }`}
+                    >
+                      <BookOpen className="w-3.5 h-3.5" /> Training
+                    </Link>
                   </>
                 )}
 
@@ -283,6 +345,16 @@ export function Navbar({ onOpenDemoScenarios }) {
                       }`}
                     >
                       {t('society.complaints', 'Grievance Board')}
+                    </Link>
+                    <Link
+                      to="/society/governance"
+                      className={`px-3 py-2 rounded-md text-sm font-medium transition-colors ${
+                        location.pathname === '/society/governance'
+                          ? 'bg-blue-50 text-blue-900 font-semibold'
+                          : 'text-slate-700 hover:text-blue-900 hover:bg-slate-50'
+                      }`}
+                    >
+                      Governance
                     </Link>
                   </>
                 )}
@@ -504,6 +576,18 @@ export function Navbar({ onOpenDemoScenarios }) {
               <Link to="/customer" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm font-semibold text-blue-900">
                 Book & Request
               </Link>
+              <Link to="/customer/househelp" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Househelp
+              </Link>
+              <Link to="/customer/beauty-spa" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Beauty & Spa
+              </Link>
+              <Link to="/customer/manicure-pedicure" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Nails
+              </Link>
+              <Link to="/customer/profile" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
+                Profile
+              </Link>
               <Link to="/customer/bookings" onClick={() => setMobileMenuOpen(false)} className="block py-1.5 text-sm text-slate-700">
                 My Bookings & Invoices
               </Link>
@@ -538,6 +622,12 @@ export function Navbar({ onOpenDemoScenarios }) {
               </Link>
               <Link to="/worker/dividend" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-amber-700">
                 <Coins className="w-3.5 h-3.5" /> Dividend Calculator
+              </Link>
+              <Link to="/worker/aadhaar" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-blue-700">
+                <Shield className="w-3.5 h-3.5" /> Aadhaar & DigiLocker
+              </Link>
+              <Link to="/worker/training" onClick={() => setMobileMenuOpen(false)} className="flex items-center gap-1.5 py-1.5 text-sm text-emerald-700">
+                <BookOpen className="w-3.5 h-3.5" /> Training Courses
               </Link>
             </div>
           )}

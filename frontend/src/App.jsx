@@ -1,10 +1,30 @@
-import React, { useState } from 'react';
+import React, { useState, Component } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { useAuth } from './context/AuthContext';
 import { Navbar } from './components/common/Navbar';
 import { Footer } from './components/common/Footer';
 import { DemoScenarioModal } from './components/demo/DemoScenarioModal';
 import { AiChatWidget } from './components/common/AiChatWidget';
+
+class ErrorBoundary extends Component {
+  state = { error: null };
+  static getDerivedStateFromError(error) { return { error }; }
+  render() {
+    if (this.state.error) return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="text-center max-w-md">
+          <div className="text-4xl mb-3">⚠️</div>
+          <h2 className="text-lg font-bold text-slate-800 mb-2">Something went wrong</h2>
+          <p className="text-sm text-slate-500 mb-4">{this.state.error.message}</p>
+          <button onClick={() => { this.setState({ error: null }); window.location.reload(); }} className="px-4 py-2 bg-blue-600 text-white rounded-lg text-sm hover:bg-blue-700">
+            Reload Page
+          </button>
+        </div>
+      </div>
+    );
+    return this.props.children;
+  }
+}
 
 // Pages
 import { LandingPage } from './pages/LandingPage';
@@ -20,6 +40,8 @@ import { WorkerUtilizationPage } from './pages/worker/WorkerUtilizationPage';
 import { SkillPassportPage } from './pages/worker/SkillPassportPage';
 import { WellnessPage } from './pages/worker/WellnessPage';
 import { DividendPage } from './pages/worker/DividendPage';
+import { AadhaarVerificationPage } from './pages/worker/AadhaarVerificationPage';
+import { TrainingPage } from './pages/worker/TrainingPage';
 import { GovernancePage } from './pages/society/GovernancePage';
 import { SocietyDashboard } from './pages/society/SocietyDashboard';
 import { SocietyWorkersPage } from './pages/society/SocietyWorkersPage';
@@ -28,6 +50,10 @@ import { FederationDashboard } from './pages/federation/FederationDashboard';
 import { PlatformAdminPage } from './pages/admin/PlatformAdminPage';
 import { VoiceBookingPage } from './pages/customer/VoiceBookingPage';
 import { CommunityImpactPage } from './pages/CommunityImpactPage';
+import HousehelpPage from './pages/customer/HousehelpPage';
+import BeautySpaPage from './pages/customer/BeautySpaPage';
+import ManicurePedicurePage from './pages/customer/ManicurePedicurePage';
+import ProfilePage from './pages/customer/ProfilePage';
 
 export function App() {
   const [demoModalOpen, setDemoModalOpen] = useState(false);
@@ -49,6 +75,7 @@ export function App() {
       <Navbar onOpenDemoScenarios={() => setDemoModalOpen(true)} />
 
       <main className="flex-1">
+        <ErrorBoundary>
         <Routes>
           <Route path="/" element={<LandingPage onOpenDemoScenarios={() => setDemoModalOpen(true)} />} />
           <Route path="/login" element={<LoginPage />} />
@@ -58,6 +85,10 @@ export function App() {
           <Route path="/customer" element={<CustomerDashboard />} />
           <Route path="/customer/bookings" element={<BookingHistoryPage />} />
           <Route path="/customer/voice-book" element={<VoiceBookingPage />} />
+          <Route path="/customer/househelp" element={<HousehelpPage />} />
+          <Route path="/customer/beauty-spa" element={<BeautySpaPage />} />
+          <Route path="/customer/manicure-pedicure" element={<ManicurePedicurePage />} />
+          <Route path="/customer/profile" element={<ProfilePage />} />
 
           {/* Worker Routes */}
           <Route path="/worker" element={<WorkerDashboard />} />
@@ -68,6 +99,8 @@ export function App() {
           <Route path="/worker/passport" element={<SkillPassportPage />} />
           <Route path="/worker/wellness" element={<WellnessPage />} />
           <Route path="/worker/dividend" element={<DividendPage />} />
+          <Route path="/worker/aadhaar" element={<AadhaarVerificationPage />} />
+          <Route path="/worker/training" element={<TrainingPage />} />
 
           {/* Society Admin Routes */}
           <Route path="/society" element={<SocietyDashboard />} />
@@ -87,6 +120,7 @@ export function App() {
           {/* Fallback */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </ErrorBoundary>
       </main>
 
       <Footer />

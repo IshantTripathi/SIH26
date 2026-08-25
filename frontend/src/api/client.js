@@ -31,7 +31,8 @@ async function request(endpoint, options = {}) {
 
 export const api = {
   // Auth & Demo
-  login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) }),
+  login: (credentials) => request('/auth/login', { method: 'POST', body: JSON.stringify({ email: credentials.identifier || credentials.email, password: credentials.password }) }),
+  googleLogin: (token) => request('/auth/google', { method: 'POST', body: JSON.stringify({ token }) }),
   register: (userData) => request('/auth/register', { method: 'POST', body: JSON.stringify(userData) }),
   getProfile: () => request('/auth/profile'),
   getDemoAccounts: () => request('/auth/demo-accounts'),
@@ -46,6 +47,8 @@ export const api = {
   },
   getJobById: (id) => request(`/jobs/${id}`),
   updateJobStatus: (id, payload) => request(`/jobs/${id}/status`, { method: 'PATCH', body: JSON.stringify(payload) }),
+  getJobWorkerLocation: (id) => request(`/jobs/${id}/location`),
+  updateWorkerLocation: (id, lat, lng) => request(`/jobs/${id}/location`, { method: 'POST', body: JSON.stringify({ lat, lng }) }),
   processPayment: (id, payload) => request(`/jobs/${id}/payment`, { method: 'POST', body: JSON.stringify(payload) }),
   submitRating: (id, payload) => request(`/jobs/${id}/rate`, { method: 'POST', body: JSON.stringify(payload) }),
   cancelJob: (id, payload = {}) => request(`/jobs/${id}/cancel`, { method: 'POST', body: JSON.stringify(payload) }),
@@ -71,7 +74,6 @@ export const api = {
   getWorkerEarnings: (id) => request(id ? `/worker/earnings/${id}` : '/worker/earnings'),
   updateWorkerLocation: (payload) => request('/worker/location', { method: 'PATCH', body: JSON.stringify(payload) }),
   getWorkerLocation: (workerId) => request(`/worker/location/${workerId}`),
-  getJobWorkerLocation: (jobId) => request(`/worker/location/job/${jobId}`),
 
   // Society Admin
   getSocietyDashboard: (id) => request(id ? `/society/dashboard/${id}` : '/society/dashboard'),
@@ -127,6 +129,7 @@ export const api = {
     return request(`/system/logs${query ? `?${query}` : ''}`);
   },
   getServices: () => request('/system/services'),
+  getWorkers: (category) => request(`/system/workers${category ? `?category=${encodeURIComponent(category)}` : ''}`),
   addService: (payload) => request('/system/services', { method: 'POST', body: JSON.stringify(payload) }),
 
   // Loyalty & Tier System
@@ -143,6 +146,7 @@ export const api = {
 
   // Callbacks
   scheduleCallback: (payload) => request('/callbacks', { method: 'POST', body: JSON.stringify(payload) }),
+  getMyCallbacks: () => request('/callbacks'),
 
   // Seasonal Suggestions
   getSeasonalSuggestions: () => request('/seasonal'),
@@ -233,12 +237,43 @@ export const api = {
   getCooperativeSurplus: () => request('/dividend/surplus'),
 
   // Innovation 8: AR Repair Guidance
-  getRepairGuide: (category, issueType) => request(`/ar-guidance/guide/${encodeURIComponent(category)}${issueType ? `/${encodeURIComponent(issueType)}` : ''}`),
-  getAllRepairGuides: () => request('/ar-guidance/guides'),
-  getToolRecommendations: (category) => request(`/ar-guidance/tools/${encodeURIComponent(category)}`),
+  getRepairGuide: (category, issueType) => request(`/ar-guides/${encodeURIComponent(category)}${issueType ? `/${encodeURIComponent(issueType)}` : ''}`),
+  getAllRepairGuides: () => request('/ar-guides'),
+  getToolRecommendations: (category) => request(`/ar-tools/${encodeURIComponent(category)}`),
+
+  // Urban Company Style: Subscription Packs & Instant Booking
+  getSubscriptionPacks: (serviceCategory) => request(`/subscription/packs/${encodeURIComponent(serviceCategory)}`),
+  purchaseSubscriptionPack: (payload) => request('/subscription/purchase', { method: 'POST', body: JSON.stringify(payload) }),
+  getCustomerSubscriptions: (customerId) => request(`/subscription/customer/${customerId}`),
+  useSubscriptionSession: (subscriptionId) => request('/subscription/use-session', { method: 'POST', body: JSON.stringify({ subscriptionId }) }),
+  getInstantBookingEligibility: (serviceCategory) => request(`/subscription/instant-booking/eligibility/${encodeURIComponent(serviceCategory)}`),
+  createInstantBooking: (payload) => request('/subscription/instant-booking/create', { method: 'POST', body: JSON.stringify(payload) }),
+  respondToInstantBooking: (payload) => request('/subscription/instant-booking/respond', { method: 'POST', body: JSON.stringify(payload) }),
+  getInstantBookingStatus: (bookingId) => request(`/subscription/instant-booking/${bookingId}`),
+
+  // New Service Categories
+  getBeautySpaServices: () => request('/system/services?category=Beauty & Spa'),
+  getManicurePedicureServices: () => request('/system/services?category=Manicure & Pedicure'),
+  getHousehelpServices: () => request('/system/services?category=Househelp'),
 
   // Gemini AI Assistant
   chatWithAi: (payload) => request('/ai/chat', { method: 'POST', body: JSON.stringify(payload) }),
   getAiSuggestions: () => request('/ai/suggestions'),
-  getAiStatus: () => request('/ai/status')
+  getAiStatus: () => request('/ai/status'),
+
+  // Aadhaar & DigiLocker Verification
+  initiateAadhaar: (payload) => request('/aadhaar/initiate', { method: 'POST', body: JSON.stringify(payload) }),
+  verifyAadhaarOtp: (payload) => request('/aadhaar/verify-otp', { method: 'POST', body: JSON.stringify(payload) }),
+  connectDigiLocker: () => request('/aadhaar/digilocker/connect', { method: 'POST' }),
+  getAadhaarStatus: () => request('/aadhaar/status'),
+  getAadhaarCertificate: (workerId) => request(`/aadhaar/certificate/${workerId}`),
+
+  // Worker Training Platform
+  getTrainingCourses: (category) => request(`/training/courses${category ? `?category=${encodeURIComponent(category)}` : ''}`),
+  getTrainingCourse: (courseId) => request(`/training/courses/${courseId}`),
+  enrollCourse: (courseId) => request('/training/enroll', { method: 'POST', body: JSON.stringify({ courseId }) }),
+  getMyCourses: () => request('/training/my-courses'),
+  updateTrainingProgress: (courseId, moduleId) => request('/training/progress', { method: 'POST', body: JSON.stringify({ courseId, moduleId }) }),
+  submitQuiz: (courseId, score) => request('/training/quiz', { method: 'POST', body: JSON.stringify({ courseId, score }) }),
+  getTrainingStats: () => request('/training/stats')
 };

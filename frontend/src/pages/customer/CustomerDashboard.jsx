@@ -67,6 +67,9 @@ export function CustomerDashboard() {
   const [customerAddress, setCustomerAddress] = useState(
     user?.address || 'B-42, Metro Residency, Connaught Place'
   );
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [locationLoading, setLocationLoading] = useState(false);
+  const [locationError, setLocationError] = useState('');
 
   // Intent classification
   const [isClassifying, setIsClassifying] = useState(false);
@@ -121,6 +124,7 @@ export function CustomerDashboard() {
   const [callbackTime, setCallbackTime] = useState('');
   const [callbackReason, setCallbackReason] = useState('');
   const [callbackModal, setCallbackModal] = useState(false);
+  const [callbackSuccess, setCallbackSuccess] = useState('');
   const [seasonalSuggestions, setSeasonalSuggestions] = useState([]);
   const [warrantyModalJob, setWarrantyModalJob] = useState(null);
 
@@ -133,6 +137,52 @@ export function CustomerDashboard() {
     const interval = setInterval(fetchActiveJobs, 4000);
     return () => clearInterval(interval);
   }, []);
+
+  const getCurrentLocation = () => {
+    if (!navigator.geolocation) {
+      setLocationError('Geolocation is not supported by your browser');
+      return;
+    }
+    setLocationLoading(true);
+    setLocationError('');
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
+        setCurrentLocation({ lat: latitude, lng: longitude });
+        try {
+          const response = await fetch(
+            `https://nominatim.openstreetmap.org/reverse?format=json&lat=${latitude}&lon=${longitude}`
+          );
+          const data = await response.json();
+          if (data.display_name) {
+            setCustomerAddress(data.display_name);
+          } else {
+            setCustomerAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+          }
+        } catch (err) {
+          setCustomerAddress(`${latitude.toFixed(4)}, ${longitude.toFixed(4)}`);
+        }
+        setLocationLoading(false);
+      },
+      (error) => {
+        setLocationLoading(false);
+        switch (error.code) {
+          case error.PERMISSION_DENIED:
+            setLocationError('Location permission denied. Please enable location access.');
+            break;
+          case error.POSITION_UNAVAILABLE:
+            setLocationError('Location information unavailable.');
+            break;
+          case error.TIMEOUT:
+            setLocationError('Location request timed out.');
+            break;
+          default:
+            setLocationError('An error occurred getting your location.');
+        }
+      },
+      { enableHighAccuracy: true, timeout: 10000, maximumAge: 300000 }
+    );
+  };
 
   const fetchActiveJobs = async () => {
     try {
@@ -235,7 +285,7 @@ export function CustomerDashboard() {
         scheduledDate,
         scheduledTime,
         customerAddress,
-        customerLocation: user?.location || { lat: 28.6140, lng: 77.2095 },
+        customerLocation: currentLocation || user?.location || { lat: 28.6140, lng: 77.2095 },
         durationHours,
         usePackCredit
       });
@@ -416,9 +466,12 @@ export function CustomerDashboard() {
       const res = await api.scheduleCallback({ preferredTime: callbackTime || 'Next available', reason: callbackReason || 'General inquiry' });
       if (res.success) {
         setCallbackModal(false);
-        alert(res.message);
+        setCallbackSuccess(res.message || 'Callback scheduled successfully!');
+        setCallbackTime('');
+        setCallbackReason('');
+        setTimeout(() => setCallbackSuccess(''), 5000);
       }
-    } catch (err) { alert(err.message); }
+    } catch (err) { setBookingError(err.message); }
   };
 
   return (
@@ -599,6 +652,52 @@ export function CustomerDashboard() {
                 </div>
               </div>
 
+              {/* Quick Select Common Issues */}
+              <div>
+                <label className="block font-bold text-slate-800 mb-2">
+                  ⚡ Quick Select - Common Issues
+                </label>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">
+                  {[
+                    { icon: '🔧', label: 'Tap/Leak', category: 'Plumbing', desc: 'Leaking tap, pipe burst' },
+                    { icon: '💡', label: 'Electrical', category: 'Electrical', desc: 'Fan, light, switch' },
+                    { icon: '🪑', label: 'Furniture', category: 'Carpentry', desc: 'Door, window, table' },
+                    { icon: '🧹', label: 'Cleaning', category: 'Cleaning', desc: 'Deep clean, kitchen' },
+                    { icon: '🎨', label: 'Painting', category: 'Painting', desc: 'Wall paint, touchup' },
+                    { icon: '🌿', label: 'Gardening', category: 'Gardening', desc: 'Lawn, plants, pruning' },
+                    { icon: '🏠', label: 'Househelp', category: 'Househelp', desc: 'Cooking, dishes, laundry' },
+                    { icon: '💆', label: 'Beauty/Spa', category: 'Beauty & Spa', desc: 'Facial, massage, spa' },
+                    { icon: '💅', label: 'Manicure', category: 'Manicure & Pedicure', desc: 'Nails, pedicure, art' },
+                    { icon: '🧊', label: 'Appliance', category: 'Appliance Repair', desc: 'Fridge, AC, washing' },
+                    { icon: '🚗', label: 'Driver', category: 'Driving', desc: 'Chauffeur, drop' },
+                    { icon: '👴', label: 'Caregiving', category: 'Caregiving', desc: 'Elder, patient care' }
+                  ].map((item, idx) => (
+                    <button
+                      key={idx}
+                      type="button"
+                      onClick={() => {
+                        setDetectedCategory(item.category);
+                        setProblemDescription(item.desc);
+                        setIntentData({
+                          serviceCategory: item.category,
+                          serviceTitle: item.label,
+                          basePrice: 500,
+                          confidence: 1.0
+                        });
+                      }}
+                      className={`flex flex-col items-center p-2 rounded-xl border-2 transition-all hover:scale-105 ${
+                        detectedCategory === item.category
+                          ? 'border-blue-500 bg-blue-50 shadow-md'
+                          : 'border-slate-200 bg-white hover:border-blue-300 hover:bg-blue-50'
+                      }`}
+                    >
+                      <span className="text-2xl mb-1">{item.icon}</span>
+                      <span className="text-[10px] font-bold text-slate-700 text-center leading-tight">{item.label}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
               {/* Automatic Classifier Feedback */}
               {intentData && (
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-center justify-between animate-in fade-in">
@@ -671,13 +770,37 @@ export function CustomerDashboard() {
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block font-semibold text-slate-700 mb-1">{t('customer.address', 'Service Location / Address')}</label>
-                  <input
-                    type="text"
-                    value={customerAddress}
-                    onChange={(e) => setCustomerAddress(e.target.value)}
-                    required
-                    className="w-full px-3 py-2 border border-slate-300 rounded-lg text-xs"
-                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={customerAddress}
+                      onChange={(e) => setCustomerAddress(e.target.value)}
+                      required
+                      className="flex-1 px-3 py-2 border border-slate-300 rounded-lg text-xs"
+                    />
+                    <button
+                      type="button"
+                      onClick={getCurrentLocation}
+                      disabled={locationLoading}
+                      className="px-3 py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white rounded-lg text-xs font-medium flex items-center gap-1 whitespace-nowrap"
+                      title="Use current location"
+                    >
+                      {locationLoading ? (
+                        <RefreshCw className="w-4 h-4 animate-spin" />
+                      ) : (
+                        <MapPin className="w-4 h-4" />
+                      )}
+                      {locationLoading ? 'Locating...' : 'Current'}
+                    </button>
+                  </div>
+                  {locationError && (
+                    <p className="text-[11px] text-red-600 mt-1">{locationError}</p>
+                  )}
+                  {currentLocation && (
+                    <p className="text-[10px] text-green-600 mt-1">
+                      Lat: {currentLocation.lat.toFixed(4)}, Lng: {currentLocation.lng.toFixed(4)}
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -722,7 +845,7 @@ export function CustomerDashboard() {
                       }
                       setSubmittingJob(false);
                     }}
-                    disabled={submittingJob || !detectedCategory}
+                    disabled={submittingJob}
                     className="w-full bg-red-600 hover:bg-red-700 disabled:opacity-50 text-white py-3 rounded-lg text-sm font-bold flex items-center justify-center gap-2 shadow-lg animate-pulse"
                   >
                     <AlertTriangle className="w-4 h-4" />
@@ -803,6 +926,14 @@ export function CustomerDashboard() {
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{bookingSuccess}</span>
+                </div>
+              )}
+
+              {callbackSuccess && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-center gap-2 animate-in fade-in">
+                  <PhoneCall className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>{callbackSuccess}</span>
+                  <Link to="/customer/profile" className="ml-auto text-blue-600 underline font-semibold">View in Profile</Link>
                 </div>
               )}
 

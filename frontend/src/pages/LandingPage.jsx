@@ -41,8 +41,8 @@ export function LandingPage({ onOpenDemoScenarios }) {
   };
 
   const handleBookNowWithIntent = async (type = 'Household') => {
-    await quickSwitchRole(type === 'Institution' ? 'institution01@demo.coop' : 'customer01@demo.coop');
-    navigate('/customer', { state: { prefilledIntent: detectedIntent, problemQuery, customerType: type } });
+    const res = await quickSwitchRole(type === 'Institution' ? 'institution01@demo.coop' : 'customer01@demo.coop');
+    if (res?.success) navigate('/customer', { state: { prefilledIntent: detectedIntent, problemQuery, customerType: type } });
   };
 
   return (
@@ -67,8 +67,8 @@ export function LandingPage({ onOpenDemoScenarios }) {
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <button
               onClick={async () => {
-                await quickSwitchRole('customer01@demo.coop');
-                navigate('/customer');
+                const res = await quickSwitchRole('customer01@demo.coop');
+                if (res?.success) navigate('/customer');
               }}
               className="bg-amber-600 hover:bg-amber-700 text-white px-5 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center gap-2"
             >
@@ -77,8 +77,8 @@ export function LandingPage({ onOpenDemoScenarios }) {
             </button>
             <button
               onClick={async () => {
-                await quickSwitchRole('institution01@demo.coop');
-                navigate('/customer');
+                const res = await quickSwitchRole('institution01@demo.coop');
+                if (res?.success) navigate('/customer');
               }}
               className="bg-blue-800 hover:bg-blue-700 text-white border border-blue-600 px-5 py-2.5 rounded-lg font-bold text-sm shadow-md transition-all flex items-center gap-2"
             >
