@@ -124,6 +124,7 @@ export function CustomerDashboard() {
   const [callbackTime, setCallbackTime] = useState('');
   const [callbackReason, setCallbackReason] = useState('');
   const [callbackModal, setCallbackModal] = useState(false);
+  const [callbackSuccess, setCallbackSuccess] = useState('');
   const [seasonalSuggestions, setSeasonalSuggestions] = useState([]);
   const [warrantyModalJob, setWarrantyModalJob] = useState(null);
 
@@ -465,9 +466,12 @@ export function CustomerDashboard() {
       const res = await api.scheduleCallback({ preferredTime: callbackTime || 'Next available', reason: callbackReason || 'General inquiry' });
       if (res.success) {
         setCallbackModal(false);
-        alert(res.message);
+        setCallbackSuccess(res.message || 'Callback scheduled successfully!');
+        setCallbackTime('');
+        setCallbackReason('');
+        setTimeout(() => setCallbackSuccess(''), 5000);
       }
-    } catch (err) { alert(err.message); }
+    } catch (err) { setBookingError(err.message); }
   };
 
   return (
@@ -922,6 +926,14 @@ export function CustomerDashboard() {
                 <div className="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center gap-2 animate-in fade-in">
                   <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0" />
                   <span>{bookingSuccess}</span>
+                </div>
+              )}
+
+              {callbackSuccess && (
+                <div className="p-3 bg-blue-50 border border-blue-200 rounded-xl text-xs text-blue-800 flex items-center gap-2 animate-in fade-in">
+                  <PhoneCall className="w-4 h-4 text-blue-600 shrink-0" />
+                  <span>{callbackSuccess}</span>
+                  <Link to="/customer/profile" className="ml-auto text-blue-600 underline font-semibold">View in Profile</Link>
                 </div>
               )}
 

@@ -15,18 +15,21 @@ import {
   Loader2,
   Navigation,
   Package,
-  CreditCard
+  CreditCard,
+  PhoneCall
 } from 'lucide-react';
 
 export default function ProfilePage() {
   const { user } = useAuth();
   const [bookings, setBookings] = useState([]);
+  const [callbacks, setCallbacks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('active');
   const [workerLocations, setWorkerLocations] = useState({});
 
   useEffect(() => {
     fetchBookings();
+    fetchCallbacks();
   }, []);
 
   useEffect(() => {
@@ -57,6 +60,13 @@ export default function ProfilePage() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const fetchCallbacks = async () => {
+    try {
+      const res = await api.getMyCallbacks();
+      if (res.success) setCallbacks(res.callbacks || []);
+    } catch (err) { /* ignore */ }
   };
 
   const getStatusColor = (status) => {
@@ -160,10 +170,50 @@ export default function ProfilePage() {
             >
               Past Bookings ({pastBookings.length})
             </button>
+            <button
+              onClick={() => setActiveTab('callbacks')}
+              className={`flex-1 py-3 text-sm font-semibold transition ${
+                activeTab === 'callbacks'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+              }`}
+            >
+              Callbacks ({callbacks.length})
+            </button>
           </div>
 
           <div className="p-4">
-            {filteredBookings.length === 0 ? (
+            {activeTab === 'callbacks' ? (
+              callbacks.length === 0 ? (
+                <div className="text-center py-8">
+                  <PhoneCall className="w-12 h-12 text-gray-300 mx-auto mb-3" />
+                  <p className="text-gray-500">No scheduled callbacks</p>
+                  <Link to="/customer" className="mt-3 inline-block bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-blue-700">
+                    Schedule a Callback
+                  </Link>
+                </div>
+              ) : (
+                <div className="space-y-3">
+                  {callbacks.map((cb) => (
+                    <div key={cb.id} className="border rounded-xl p-4 hover:shadow-md transition">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="flex items-center gap-2">
+                            <PhoneCall className="w-4 h-4 text-blue-600" />
+                            <span className="font-semibold text-gray-800 text-sm">{cb.reason || 'General inquiry'}</span>
+                          </div>
+                          <p className="text-xs text-gray-500 mt-1">Preferred time: <strong>{cb.preferredTime}</strong></p>
+                          <p className="text-xs text-gray-400 mt-0.5">Scheduled: {new Date(cb.createdAt).toLocaleString()}</p>
+                        </div>
+                        <span className={`text-xs px-2 py-1 rounded-full font-medium ${cb.status === 'Scheduled' ? 'bg-blue-100 text-blue-800' : cb.status === 'Completed' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'}`}>
+                          {cb.status}
+                        </span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )
+            ) : filteredBookings.length === 0 ? (
               <div className="text-center py-8">
                 <Package className="w-12 h-12 text-gray-300 mx-auto mb-3" />
                 <p className="text-gray-500">No {activeTab} bookings</p>

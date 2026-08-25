@@ -2,15 +2,28 @@ import express from 'express';
 import cors from 'cors';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
+import fs from 'fs';
+import path from 'path';
 
 const app = express();
 app.use(cors({ origin: '*', methods: ['GET','POST','PATCH','PUT','DELETE'] }));
 app.use(express.json());
 
+// Auto-save store after every mutation
+app.use((req, res, next) => {
+  if (['POST','PATCH','PUT','DELETE'].includes(req.method)) {
+    const origJson = res.json.bind(res);
+    res.json = function(data) { store.save(); return origJson(data); };
+  }
+  next();
+});
+
 const JWT_SECRET = process.env.JWT_SECRET || 'cooperative-sih89-demo-secret-key-2026';
 const ROLES = { CUSTOMER:'customer', WORKER:'worker', SOCIETY_ADMIN:'society_admin', FEDERATION_ADMIN:'federation_admin', PLATFORM_ADMIN:'platform_admin' };
 const JOB_STATUSES = { REQUESTED:'REQUESTED', MATCHING:'MATCHING', OFFERED:'OFFERED', ACCEPTED:'ACCEPTED', ON_THE_WAY:'ON_THE_WAY', ARRIVED:'ARRIVED', IN_PROGRESS:'IN_PROGRESS', COMPLETED:'COMPLETED', PAYMENT_PENDING:'PAYMENT_PENDING', PAID:'PAID', CANCELLED:'CANCELLED' };
 const URGENCY = { NORMAL:'Normal', HIGH:'High', EMERGENCY:'Emergency' };
+
+const STORE_FILE = '/tmp/sahakar_store.json';
 
 class DataStore {
   constructor() { this.reset(); }
@@ -94,9 +107,31 @@ class DataStore {
   findByIdAndUpdate(c,id,u) { const l=this.getCollection(c); const i=l.findIndex(x=>x.id===id||x._id===id); if(i===-1)return null; l[i]={...l[i],...u,updatedAt:new Date().toISOString()}; return JSON.parse(JSON.stringify(l[i])); }
   logAudit(a) { const e={id:`AUDIT-${Date.now()}`,actorName:a.actorName||'System',actorRole:a.actorRole||'system',action:a.action,module:a.module||'General',recordId:a.recordId||'N/A',details:a.details||'',timestamp:new Date().toISOString()}; this.auditLogs.unshift(e); this.notifications.unshift({...e,read:false}); return e; }
   pushNotification(n) { const note={id:`NOTIF-${Date.now()}`,title:n.title,message:n.message,targetRole:n.targetRole,targetUserId:n.targetUserId,type:n.type||'info',read:false,timestamp:new Date().toISOString()}; this.notifications.unshift(note); return note; }
+  save() {
+    try {
+      const data = {};
+      for (const key of Object.keys(this)) {
+        if (Array.isArray(this[key]) || (typeof this[key] === 'object' && this[key] !== null && !(this[key] instanceof Date))) {
+          data[key] = this[key];
+        }
+      }
+      fs.writeFileSync(STORE_FILE, JSON.stringify(data));
+    } catch(e) {}
+  }
+  load() {
+    try {
+      if (fs.existsSync(STORE_FILE)) {
+        const data = JSON.parse(fs.readFileSync(STORE_FILE, 'utf8'));
+        for (const [k, v] of Object.entries(data)) { this[k] = v; }
+        return true;
+      }
+    } catch(e) {}
+    return false;
+  }
 }
 
 const store = new DataStore();
+if (!store.load()) { store.save(); }
 
 function authenticate(req, res, next) {
   const demoUserId = req.headers['x-demo-user-id'];
@@ -366,7 +401,8 @@ app.post('/api/coupons/apply', authenticate, (req,res) => { const c=store.findOn
 app.get('/api/warranties', authenticate, (req,res) => { return res.json({success:true,warranties:store.warranties}); });
 app.post('/api/warranties', authenticate, (req,res) => { const w=store.create('warranties',{jobId:req.body.jobId,workerId:req.body.workerId,serviceCategory:req.body.serviceCategory,expiresAt:new Date(Date.now()+365*24*60*60*1000).toISOString(),claimsUsed:0,maxClaims:2}); return res.json({success:true,warranty:w}); });
 app.post('/api/warranties/:id/claim', authenticate, (req,res) => { const w=store.findByIdAndUpdate('warranties',req.params.id,{claimsUsed:(store.findById('warranties',req.params.id)?.claimsUsed||0)+1}); return res.json({success:true,warranty:w}); });
-app.post('/api/callbacks', authenticate, (req,res) => { const c=store.create('callbacks',{customerId:req.user.id,...req.body,status:'Scheduled'}); return res.json({success:true,callback:c}); });
+app.post('/api/callbacks', authenticate, (req,res) => { const c=store.create('callbacks',{customerId:req.user.id,customerName:req.user.name,...req.body,status:'Scheduled'}); store.pushNotification({title:'Callback Scheduled',message:`Callback at ${req.body.preferredTime || 'Next available'} — ${req.body.reason || 'General inquiry'}`,targetUserId:req.user.id,type:'info'}); return res.json({success:true,callback:c,message:'Callback scheduled successfully! We will call you at your preferred time.'}); });
+app.get('/api/callbacks', authenticate, (req,res) => { const cbs=store.find('callbacks',{customerId:req.user.id}); return res.json({success:true,callbacks:cbs.sort((a,b)=>new Date(b.createdAt)-new Date(a.createdAt))}); });
 app.get('/api/seasonal', (req,res) => { return res.json({success:true,suggestions:store.seasonalSuggestions}); });
 
 // Emergency

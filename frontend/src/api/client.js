@@ -146,6 +146,7 @@ export const api = {
 
   // Callbacks
   scheduleCallback: (payload) => request('/callbacks', { method: 'POST', body: JSON.stringify(payload) }),
+  getMyCallbacks: () => request('/callbacks'),
 
   // Seasonal Suggestions
   getSeasonalSuggestions: () => request('/seasonal'),
