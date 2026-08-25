@@ -72,6 +72,7 @@ export function VoiceBookingPage() {
     const recognition = new SpeechRecognition();
     recognition.lang = 'hi-IN';
     recognition.interimResults = false;
+    recognition.maxAlternatives = 3;
 
     recognition.onstart = () => setIsRecording(true);
     recognition.onend = () => setIsRecording(false);
@@ -80,7 +81,17 @@ export function VoiceBookingPage() {
       setInputText(transcript);
       sendMessage(transcript);
     };
-    recognition.onerror = () => setIsRecording(false);
+    recognition.onerror = (event) => {
+      console.error('Speech recognition error:', event.error);
+      setIsRecording(false);
+      if (event.error === 'not-allowed') {
+        setMessages(prev => [...prev, { role: 'assistant', text: 'Microphone access denied. Please allow microphone access in your browser settings, or type your message.', timestamp: new Date() }]);
+      } else if (event.error === 'no-speech') {
+        setMessages(prev => [...prev, { role: 'assistant', text: 'No speech detected. Please try speaking again or type your message.', timestamp: new Date() }]);
+      } else if (event.error === 'network') {
+        setMessages(prev => [...prev, { role: 'assistant', text: 'Network error during speech recognition. Please type your message instead.', timestamp: new Date() }]);
+      }
+    };
     recognition.start();
   };
 
