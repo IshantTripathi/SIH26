@@ -253,5 +253,10 @@ export const api = {
   // New Service Categories
   getBeautySpaServices: () => request('/system/services?category=Beauty & Spa'),
   getManicurePedicureServices: () => request('/system/services?category=Manicure & Pedicure'),
-  getHousehelpServices: () => request('/system/services?category=Househelp')
+  getHousehelpServices: () => request('/system/services?category=Househelp'),
+
+  // Gemini AI Assistant
+  chatWithAi: (payload) => request('/ai/chat', { method: 'POST', body: JSON.stringify(payload) }),
+  getAiSuggestions: () => request('/ai/suggestions'),
+  getAiStatus: () => request('/ai/status')
 };

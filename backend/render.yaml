@@ -12,3 +12,7 @@ services:
         value: cooperative-sih89-demo-secret-key-2026
       - key: CORS_ORIGIN
         value: https://sih26089-coop.vercel.app
+      - key: GEMINI_MODEL
+        value: gemini-3.7-flash
+      - key: GEMINI_API_KEY
+        sync: false

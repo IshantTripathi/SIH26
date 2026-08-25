@@ -30,6 +30,7 @@ import wellnessRoutes from './src/routes/wellnessRoutes.js';
 import dividendRoutes from './src/routes/dividendRoutes.js';
 import arRoutes from './src/routes/arRoutes.js';
 import subscriptionRoutes from './src/routes/subscriptionRoutes.js';
+import aiRoutes from './src/routes/aiRoutes.js';
 
 dotenv.config();
 
@@ -88,6 +89,7 @@ app.use('/api/wellness', wellnessRoutes);
 app.use('/api/dividend', dividendRoutes);
 app.use('/api/ar-guidance', arRoutes);
 app.use('/api/subscription', subscriptionRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Global Error Handler
 app.use((err, req, res, next) => {
