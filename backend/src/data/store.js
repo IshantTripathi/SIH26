@@ -1,3 +1,7 @@
+import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import bcrypt from 'bcryptjs';
 import {
   initialFederations,
   initialSocieties,
@@ -11,12 +15,92 @@ import {
   initialAuditLogs
 } from './seedData.js';
 
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const PERSISTENCE_FILE = process.env.STORE_PERSISTENCE_PATH || path.join(__dirname, '..', '..', '.sahakar_datastore.json');
+
 class DataStore {
   constructor() {
-    this.reset();
+    this.persistencePath = PERSISTENCE_FILE;
+    this.saveTimeout = null;
+    this.init();
   }
 
-  reset() {
+  init() {
+    if (fs.existsSync(this.persistencePath)) {
+      try {
+        const raw = fs.readFileSync(this.persistencePath, 'utf8');
+        const parsed = JSON.parse(raw);
+        if (parsed && Array.isArray(parsed.users) && parsed.users.length > 0) {
+          this.loadFromData(parsed);
+          console.log(`✓ [DataStore] Restored persistent state from disk (${this.users.length} users, ${this.jobs.length} jobs, ${this.workers.length} workers).`);
+          return;
+        }
+      } catch (err) {
+        console.warn(`⚠️ [DataStore] Persistence file read error: ${err.message}. Rebuilding from seed.`);
+      }
+    }
+
+    this.reset(false);
+  }
+
+  loadFromData(data) {
+    this.federations = data.federations || [];
+    this.societies = data.societies || [];
+    this.users = data.users || [];
+    this.services = data.services || [];
+    this.workers = data.workers || [];
+    this.welfareRecords = data.welfareRecords || [];
+    this.jobs = data.jobs || [];
+    this.complaints = data.complaints || [];
+    this.demandData = data.demandData || [];
+    this.auditLogs = data.auditLogs || [];
+    this.welfareClaims = data.welfareClaims || [];
+    this.notifications = data.notifications || [];
+    this.dividendPool = data.dividendPool || { totalSurplus: 125000, distributionPeriod: 'Q3 2026', status: 'Pending Distribution' };
+    this.dividends = data.dividends || [];
+    this.proposals = data.proposals || [];
+    this.toolInventory = data.toolInventory || [];
+    this.toolLoans = data.toolLoans || [];
+    this.packCredits = data.packCredits || [];
+    this.guaranteePool = data.guaranteePool || { balance: 50000, minWorkerEarnings: 15000, period: 'Monthly', totalDistributed: 0 };
+    this.sosAlerts = data.sosAlerts || [];
+    this.rescheduleLog = data.rescheduleLog || [];
+    this.loyaltyTiers = data.loyaltyTiers || [];
+    this.warranties = data.warranties || [];
+    this.coupons = data.coupons || [];
+    this.callbacks = data.callbacks || [];
+    this.issueTracking = data.issueTracking || [];
+    this.emergencyQueue = data.emergencyQueue || [];
+    this.workerLocations = data.workerLocations || {};
+    this.workerApplications = data.workerApplications || [];
+    this.skillAssessments = data.skillAssessments || [];
+    this.meetings = data.meetings || [];
+    this.bylaws = data.bylaws || [];
+    this.resolutions = data.resolutions || [];
+    this.trustScores = data.trustScores || {};
+    this.voiceBookingSessions = data.voiceBookingSessions || [];
+    this.passortEndorsements = data.passortEndorsements || [];
+    this.seasonalSuggestions = data.seasonalSuggestions || [];
+
+    // Ensure all passwords are securely hashed
+    this.ensurePasswordsHashed();
+  }
+
+  ensurePasswordsHashed() {
+    let modified = false;
+    for (const u of this.users) {
+      if (u.password && !u.password.startsWith('$2a$') && !u.password.startsWith('$2b$')) {
+        u.password = bcrypt.hashSync(u.password, 10);
+        modified = true;
+      }
+    }
+    if (modified) {
+      this.saveSync();
+    }
+  }
+
+  reset(shouldSave = true) {
     this.federations = JSON.parse(JSON.stringify(initialFederations));
     this.societies = JSON.parse(JSON.stringify(initialSocieties));
     this.users = JSON.parse(JSON.stringify(initialUsers));
@@ -30,6 +114,7 @@ class DataStore {
     this.welfareClaims = [];
     this.notifications = [];
     this.dividendPool = { totalSurplus: 125000, distributionPeriod: 'Q3 2026', status: 'Pending Distribution' };
+    this.dividends = [];
     this.proposals = [
       { id: 'PROP-001', title: 'Reduce Society Cut to 3% for Festival Season', description: 'Temporarily reduce coop contribution from 4% to 3% to boost worker Diwali earnings', proposedBy: 'Worker Demo 01', status: 'Active', votesFor: 7, votesAgainst: 1, totalEligible: 12, createdAt: new Date().toISOString(), category: 'Contribution Policy' },
       { id: 'PROP-002', title: 'Add Solar Technician Trade', description: 'Add Solar PV Maintenance as new service category for green jobs', proposedBy: 'Federation Admin 01', status: 'Active', votesFor: 5, votesAgainst: 0, totalEligible: 12, createdAt: new Date().toISOString(), category: 'New Trade' }
@@ -75,6 +160,70 @@ class DataStore {
       { season: 'Winter', months: [11,12,1,2], services: ['Geyser Repair', 'Heater Service', 'Insulation'], message: 'Winter prep: Geyser & heater servicing available.', icon: 'Snowflake' },
       { season: 'Festival', months: [10,11], services: ['Home Cleaning', 'Painting', 'Gardening'], message: 'Festival cleaning? Book deep cleaning & painting at cooperative rates.', icon: 'Sparkles' }
     ];
+
+    this.ensurePasswordsHashed();
+
+    if (shouldSave) {
+      this.saveSync();
+    }
+  }
+
+  save() {
+    if (this.saveTimeout) clearTimeout(this.saveTimeout);
+    this.saveTimeout = setTimeout(() => {
+      this.saveSync();
+    }, 50);
+  }
+
+  saveSync() {
+    try {
+      const snapshot = {
+        federations: this.federations,
+        societies: this.societies,
+        users: this.users,
+        services: this.services,
+        workers: this.workers,
+        welfareRecords: this.welfareRecords,
+        jobs: this.jobs,
+        complaints: this.complaints,
+        demandData: this.demandData,
+        auditLogs: this.auditLogs,
+        welfareClaims: this.welfareClaims,
+        notifications: this.notifications,
+        dividendPool: this.dividendPool,
+        dividends: this.dividends,
+        proposals: this.proposals,
+        toolInventory: this.toolInventory,
+        toolLoans: this.toolLoans,
+        packCredits: this.packCredits,
+        guaranteePool: this.guaranteePool,
+        sosAlerts: this.sosAlerts,
+        rescheduleLog: this.rescheduleLog,
+        loyaltyTiers: this.loyaltyTiers,
+        warranties: this.warranties,
+        coupons: this.coupons,
+        callbacks: this.callbacks,
+        issueTracking: this.issueTracking,
+        emergencyQueue: this.emergencyQueue,
+        workerLocations: this.workerLocations,
+        workerApplications: this.workerApplications,
+        skillAssessments: this.skillAssessments,
+        meetings: this.meetings,
+        bylaws: this.bylaws,
+        resolutions: this.resolutions,
+        trustScores: this.trustScores,
+        voiceBookingSessions: this.voiceBookingSessions,
+        passortEndorsements: this.passortEndorsements,
+        seasonalSuggestions: this.seasonalSuggestions,
+        savedAt: new Date().toISOString()
+      };
+
+      const tempPath = `${this.persistencePath}.tmp`;
+      fs.writeFileSync(tempPath, JSON.stringify(snapshot, null, 2), 'utf8');
+      fs.renameSync(tempPath, this.persistencePath);
+    } catch (err) {
+      console.error('[DataStore Save Error]', err.message);
+    }
   }
 
   // Generic collection accessor
@@ -118,6 +267,7 @@ class DataStore {
       createdAt: data.createdAt || new Date().toISOString()
     };
     list.unshift(newItem);
+    this.save();
     return JSON.parse(JSON.stringify(newItem));
   }
 
@@ -132,6 +282,7 @@ class DataStore {
       updatedAt: new Date().toISOString()
     };
 
+    this.save();
     return JSON.parse(JSON.stringify(list[index]));
   }
 
@@ -140,6 +291,7 @@ class DataStore {
     const index = list.findIndex(it => it.id === id || it._id === id);
     if (index === -1) return false;
     list.splice(index, 1);
+    this.save();
     return true;
   }
 
@@ -155,9 +307,9 @@ class DataStore {
       timestamp: new Date().toISOString()
     };
     this.auditLogs.unshift(entry);
-    // also push as notification for relevant users
     this.notifications.unshift({ ...entry, read: false });
     if (this.notifications.length > 100) this.notifications.pop();
+    this.save();
     return entry;
   }
 
@@ -173,6 +325,7 @@ class DataStore {
       timestamp: new Date().toISOString()
     };
     this.notifications.unshift(note);
+    this.save();
     return note;
   }
 }

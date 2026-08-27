@@ -72,6 +72,10 @@ export function getWorkerProfile(req, res) {
       return res.status(400).json({ success: false, message: 'Worker ID required.' });
     }
 
+    if (req.user.role === ROLES.WORKER && req.params.id && req.params.id !== req.user.workerId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot access another worker\'s private profile.' });
+    }
+
     const worker = store.findById('workers', workerId);
     if (!worker) {
       return res.status(404).json({ success: false, message: 'Worker not found.' });
@@ -130,6 +134,11 @@ export function updateWorkerStatus(req, res) {
 export function getWorkerEarnings(req, res) {
   try {
     const workerId = req.user.workerId || req.params.id;
+
+    if (req.user.role === ROLES.WORKER && req.params.id && req.params.id !== req.user.workerId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot access another worker\'s private earnings.' });
+    }
+
     const worker = store.findById('workers', workerId);
     if (!worker) {
       return res.status(404).json({ success: false, message: 'Worker not found.' });

@@ -1,28 +1,41 @@
 import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
+import crypto from 'crypto';
 import { JWT_SECRET, ROLES, CUSTOMER_TYPES } from '../config/constants.js';
 import { store } from '../data/store.js';
+
+function sanitizeUser(user) {
+  if (!user) return null;
+  const { password, ...safeUser } = user;
+  return safeUser;
+}
 
 export function login(req, res) {
   try {
     const { identifier, email, mobile, password } = req.body;
-    const loginId = identifier || email || mobile;
+    const loginId = (identifier || email || mobile || '').trim();
 
     if (!loginId) {
       return res.status(400).json({ success: false, message: 'Please provide email or mobile number.' });
     }
 
+    if (!password) {
+      return res.status(400).json({ success: false, message: 'Password is required.' });
+    }
+
     const allUsers = store.getCollection('users');
     const user = allUsers.find(
-      u => u.email?.toLowerCase() === loginId.toLowerCase() || u.mobile === loginId
+      u => (u.email && u.email.toLowerCase() === loginId.toLowerCase()) || u.mobile === loginId
     );
 
     if (!user) {
-      return res.status(401).json({ success: false, message: 'User not found with these credentials.' });
+      return res.status(401).json({ success: false, message: 'Invalid email/mobile or password.' });
     }
 
-    // In demo environment, accept valid password or standard password123
-    if (password && password !== user.password && password !== 'password123') {
-      return res.status(401).json({ success: false, message: 'Invalid password.' });
+    // Verify password with bcrypt
+    const isPasswordValid = bcrypt.compareSync(password, user.password);
+    if (!isPasswordValid) {
+      return res.status(401).json({ success: false, message: 'Invalid email/mobile or password.' });
     }
 
     const token = jwt.sign(
@@ -46,18 +59,18 @@ export function login(req, res) {
       action: 'USER_LOGIN',
       module: 'Authentication',
       recordId: user.id,
-      details: `User logged in successfully as ${user.role} (Demo Environment)`
+      details: `User logged in successfully as ${user.role}`
     });
 
     return res.json({
       success: true,
-      message: 'Login successful (Demo Environment)',
+      message: 'Login successful',
       token,
-      user,
+      user: sanitizeUser(user),
       linkedProfile
     });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'An error occurred during authentication.' });
   }
 }
 
@@ -68,24 +81,35 @@ export function googleLogin(req, res) {
       return res.status(400).json({ success: false, message: 'Google token required.' });
     }
 
-    const payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    let payload;
+    try {
+      payload = JSON.parse(Buffer.from(token.split('.')[1], 'base64').toString());
+    } catch {
+      return res.status(400).json({ success: false, message: 'Invalid Google token format.' });
+    }
+
     const email = payload.email;
+    if (!email) {
+      return res.status(400).json({ success: false, message: 'Google token does not contain email.' });
+    }
+
     const name = payload.name || payload.given_name || 'Google User';
     const picture = payload.picture || '';
     const googleId = payload.sub;
 
     let user = store.findOne('users', { email });
     if (!user) {
+      const generatedPassword = crypto.randomBytes(24).toString('hex');
       user = store.create('users', {
         id: `USR-GOOGLE-${Date.now()}`,
         name,
         email,
-        password: 'google-oauth-no-password',
-        role: 'customer',
+        password: bcrypt.hashSync(generatedPassword, 10),
+        role: ROLES.CUSTOMER,
         mobile: '',
-        location: { lat: 28.6140, lng: 77.2095 },
-        address: 'Google Account',
-        customerType: 'Household',
+        location: { lat: 28.6140, lng: 77.2095, area: 'Central Metro', city: 'Delhi' },
+        address: 'Google Account Address',
+        customerType: CUSTOMER_TYPES.HOUSEHOLD,
         authProvider: 'google',
         googleId,
         picture
@@ -113,44 +137,56 @@ export function googleLogin(req, res) {
       action: 'USER_LOGIN_GOOGLE',
       module: 'Authentication',
       recordId: user.id,
-      details: `User logged in via Google OAuth`
+      details: 'User logged in via Google OAuth'
     });
 
     return res.json({
       success: true,
       message: 'Google login successful',
       token: jwtToken,
-      user,
+      user: sanitizeUser(user),
       linkedProfile
     });
   } catch (err) {
-    return res.status(401).json({ success: false, message: 'Invalid Google token.' });
+    return res.status(401).json({ success: false, message: 'Invalid or unverified Google token.' });
   }
 }
 
 export function register(req, res) {
   try {
     const { name, email, mobile, password, role, customerType, institutionName, institutionType, contactPerson, ...extra } = req.body;
-    if (!name || !email || !mobile || !role) {
-      return res.status(400).json({ success: false, message: 'Name, email, mobile, and role are required.' });
+
+    if (!name || !email || !mobile || !password || !role) {
+      return res.status(400).json({ success: false, message: 'Name, email, mobile, password, and role are required.' });
     }
 
-    const existing = store.findOne('users', { email });
+    const validRoles = [ROLES.CUSTOMER, ROLES.WORKER, ROLES.SOCIETY_ADMIN, ROLES.FEDERATION_ADMIN, ROLES.PLATFORM_ADMIN];
+    if (!validRoles.includes(role)) {
+      return res.status(400).json({ success: false, message: `Invalid role. Allowed roles: ${validRoles.join(', ')}` });
+    }
+
+    const emailTrimmed = email.trim().toLowerCase();
+    const existing = store.findOne('users', { email: emailTrimmed });
     if (existing) {
       return res.status(400).json({ success: false, message: 'User with this email already exists.' });
     }
 
+    const hashedPassword = bcrypt.hashSync(password, 10);
+
     const newUser = store.create('users', {
-      name,
-      email,
-      mobile,
+      name: name.trim(),
+      email: emailTrimmed,
+      mobile: mobile.trim(),
       role,
       customerType: customerType || CUSTOMER_TYPES.HOUSEHOLD,
       institutionName: institutionName || null,
       institutionType: institutionType || null,
       contactPerson: contactPerson || null,
-      password: password || 'password123',
-      ...extra
+      password: hashedPassword,
+      address: extra.address || 'Central Metro',
+      location: extra.location || { lat: 28.6140, lng: 77.2095, area: extra.serviceArea || 'Central Metro', city: 'Delhi' },
+      societyId: extra.societyId || (role === ROLES.SOCIETY_ADMIN ? 'SOC-DEMO-001' : undefined),
+      federationId: extra.federationId || (role === ROLES.FEDERATION_ADMIN ? 'FED-DEMO-001' : undefined)
     });
 
     let linkedProfile = null;
@@ -159,12 +195,12 @@ export function register(req, res) {
       const newWorker = store.create('workers', {
         userId: newUser.id,
         code: `WRK-DEMO-${Math.floor(100 + Math.random() * 900)}`,
-        name,
+        name: newUser.name,
         societyId: extra.societyId || 'SOC-DEMO-001',
         serviceCategories: extra.serviceCategories || [extra.primarySkill || 'General Maintenance'],
         primarySkill: extra.primarySkill || 'General Maintenance',
         secondarySkills: extra.secondarySkills || [],
-        experienceYears: extra.experienceYears || 2,
+        experienceYears: Number(extra.experienceYears) || 2,
         certifications: [
           {
             code: `CERT-DEMO-${Math.floor(100 + Math.random() * 900)}`,
@@ -206,18 +242,18 @@ export function register(req, res) {
       action: 'USER_REGISTERED',
       module: 'Authentication',
       recordId: newUser.id,
-      details: `New ${role} registered in Demo Environment`
+      details: `New ${role} registered`
     });
 
     return res.status(201).json({
       success: true,
-      message: 'Registration successful (Demo Environment)',
+      message: 'Registration successful',
       token,
-      user: newUser,
+      user: sanitizeUser(newUser),
       linkedProfile
     });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'An error occurred during registration.' });
   }
 }
 
@@ -233,7 +269,25 @@ export function getProfile(req, res) {
       linkedProfile = store.findById('federations', user.federationId);
     }
 
-    return res.json({ success: true, user, linkedProfile });
+    return res.json({ success: true, user: sanitizeUser(user), linkedProfile });
+  } catch (err) {
+    return res.status(500).json({ success: false, message: 'An error occurred while fetching profile.' });
+  }
+}
+
+export function logout(req, res) {
+  try {
+    if (req.user) {
+      store.logAudit({
+        actorName: req.user.name,
+        actorRole: req.user.role,
+        action: 'USER_LOGOUT',
+        module: 'Authentication',
+        recordId: req.user.id,
+        details: 'User logged out'
+      });
+    }
+    return res.json({ success: true, message: 'Logged out successfully.' });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });
   }
@@ -247,28 +301,28 @@ export function getDemoAccounts(req, res) {
         role: ROLES.CUSTOMER,
         email: 'customer01@demo.coop',
         password: 'password123',
-        description: 'Customer Demo 01 - Household problem search, booking, OTP & UPI payment'
+        description: 'Customer Demo 01 - Household problem search, booking, OTP & payment flow'
       },
       {
         roleName: 'Customer (Institution - Clinic)',
         role: ROLES.CUSTOMER,
         email: 'institution01@demo.coop',
         password: 'password123',
-        description: 'Customer Demo 02 - Healthcare facility & institutional services booking'
+        description: 'Customer Demo 02 - Healthcare facility & institutional service bookings'
       },
       {
         roleName: 'Worker B (Low Workload - Recommended)',
         role: ROLES.WORKER,
         email: 'worker01@demo.coop',
         password: 'password123',
-        description: 'Worker Demo 01 - Plumber with 2 active jobs (Fair allocation winner)'
+        description: 'Worker Demo 01 - Plumber with balanced workload (Fair allocation top rank)'
       },
       {
         roleName: 'Worker A (High Workload - 8 Jobs)',
         role: ROLES.WORKER,
         email: 'worker02@demo.coop',
         password: 'password123',
-        description: 'Worker Demo 02 - Overloaded plumber (8 active jobs, deprioritized)'
+        description: 'Worker Demo 02 - Plumber with 8 active jobs (Fatigue protection deprioritized)'
       },
       {
         roleName: 'Society Administrator',
@@ -282,20 +336,20 @@ export function getDemoAccounts(req, res) {
         role: ROLES.FEDERATION_ADMIN,
         email: 'federation.admin@demo.coop',
         password: 'password123',
-        description: 'Federation Admin 01 - Sample Labour Cooperative Federation'
+        description: 'Federation Admin 01 - Regional federation analytics and coordination'
       },
       {
         roleName: 'Platform Administrator',
         role: ROLES.PLATFORM_ADMIN,
         email: 'platform.admin@demo.coop',
         password: 'password123',
-        description: 'Platform Admin 01 - Catalogue & audit trail supervisor'
+        description: 'Platform Admin 01 - System catalog & audit log supervision'
       }
     ];
 
     return res.json({ success: true, demoAccounts });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'Error retrieving demo accounts' });
   }
 }
 
@@ -308,10 +362,10 @@ export function resetDemoData(req, res) {
       action: 'DATA_STORE_RESET',
       module: 'System',
       recordId: 'ALL',
-      details: 'Restored clean connected demo dataset'
+      details: 'Restored clean connected demo dataset with hashed credentials'
     });
     return res.json({ success: true, message: 'All demo data has been reset to default clean state.' });
   } catch (err) {
-    return res.status(500).json({ success: false, message: err.message });
+    return res.status(500).json({ success: false, message: 'Error resetting data store.' });
   }
 }

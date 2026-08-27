@@ -179,6 +179,17 @@ export function updateJobStatus(req, res) {
       return res.status(404).json({ success: false, message: 'Job not found.' });
     }
 
+    // Role-based authorization
+    if (user.role === ROLES.WORKER && job.workerId !== user.workerId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot update a job not assigned to you.' });
+    }
+    if (user.role === ROLES.CUSTOMER && job.customerId !== user.id) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot update another customer\'s job.' });
+    }
+    if (user.role === ROLES.SOCIETY_ADMIN && user.societyId && job.societyId !== user.societyId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot update jobs outside your society.' });
+    }
+
     // Step verification
     if (status === JOB_STATUSES.COMPLETED) {
       if (otpInput && otpInput !== job.otp && otpInput !== '1234') {
@@ -245,6 +256,10 @@ export function processPayment(req, res) {
     const job = store.findById('jobs', id);
     if (!job) {
       return res.status(404).json({ success: false, message: 'Job not found.' });
+    }
+
+    if (req.user.role === ROLES.CUSTOMER && job.customerId !== req.user.id) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot process payment for another customer\'s job.' });
     }
 
     const invoiceNumber = `INV-2026-${Math.floor(1000 + Math.random() * 9000)}`;
@@ -379,6 +394,18 @@ export function getJobById(req, res) {
     if (!job) {
       return res.status(404).json({ success: false, message: 'Job not found.' });
     }
+
+    const user = req.user;
+    if (user.role === ROLES.CUSTOMER && job.customerId !== user.id) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot access another customer\'s job.' });
+    }
+    if (user.role === ROLES.WORKER && job.workerId !== user.workerId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot access another worker\'s job.' });
+    }
+    if (user.role === ROLES.SOCIETY_ADMIN && user.societyId && job.societyId !== user.societyId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot access jobs outside your society.' });
+    }
+
     return res.json({ success: true, job });
   } catch (err) {
     return res.status(500).json({ success: false, message: err.message });

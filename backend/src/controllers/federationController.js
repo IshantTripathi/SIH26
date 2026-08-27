@@ -1,8 +1,14 @@
 import { store } from '../data/store.js';
+import { ROLES } from '../config/constants.js';
 
 export function getFederationDashboard(req, res) {
   try {
-    const federationId = req.params.id || req.user.federationId || 'FED-DEMO-001';
+    const federationId = req.params.id || req.user?.federationId || 'FED-DEMO-001';
+
+    if (req.user?.role === ROLES.FEDERATION_ADMIN && req.user.federationId && federationId !== req.user.federationId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You can only access your assigned federation.' });
+    }
+
     const federation = store.findById('federations', federationId);
 
     if (!federation) {

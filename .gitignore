@@ -37,3 +37,6 @@ backend/src/services/__pycache__/
 .idea/
 .DS_Store
 Thumbs.db
+*.tmp
+.sahakar_datastore.json
+backend/.sahakar_datastore.json

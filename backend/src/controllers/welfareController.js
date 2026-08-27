@@ -1,4 +1,5 @@
 import { store } from '../data/store.js';
+import { ROLES } from '../config/constants.js';
 
 export function getWelfareRecords(req, res) {
   try {
@@ -20,7 +21,12 @@ export function getWelfareRecords(req, res) {
 
 export function getWelfareByWorkerId(req, res) {
   try {
-    const workerId = req.params.workerId || req.user.workerId;
+    const workerId = req.params.workerId || req.user?.workerId;
+
+    if (req.user?.role === ROLES.WORKER && req.params.workerId && req.params.workerId !== req.user.workerId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You cannot access another worker\'s welfare records.' });
+    }
+
     const record = store.findOne('welfareRecords', { workerId });
 
     if (!record) {
@@ -41,7 +47,7 @@ export function getWelfareByWorkerId(req, res) {
         totalContributionsContributed: 250,
         claimsProcessedCount: 0,
         eligibilityStatus: 'Eligible & Enrolled',
-        status: 'Active'
+        status: 'Active (Demo Record)'
       };
       return res.json({ success: true, welfareRecord: fallback });
     }
@@ -54,8 +60,9 @@ export function getWelfareByWorkerId(req, res) {
 
 export function submitWelfareClaim(req, res) {
   try {
-    const { workerId, claimPurpose, requestedAmount, claimDetails } = req.body;
-    const worker = store.findById('workers', workerId || req.user.workerId);
+    const targetWorkerId = req.user?.role === ROLES.WORKER ? req.user.workerId : (req.body.workerId || req.user?.workerId);
+    const { claimPurpose, requestedAmount, claimDetails } = req.body;
+    const worker = store.findById('workers', targetWorkerId);
 
     if (!worker) {
       return res.status(404).json({ success: false, message: 'Worker not found.' });

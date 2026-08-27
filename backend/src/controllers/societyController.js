@@ -1,9 +1,14 @@
 import { store } from '../data/store.js';
-import { VERIFICATION_STATUS, WORKLOAD_STATUS } from '../config/constants.js';
+import { VERIFICATION_STATUS, WORKLOAD_STATUS, ROLES } from '../config/constants.js';
 
 export function getSocietyDashboard(req, res) {
   try {
-    const societyId = req.params.id || req.user.societyId || 'SOC-DEMO-001';
+    const societyId = req.params.id || req.user?.societyId || 'SOC-DEMO-001';
+
+    if (req.user?.role === ROLES.SOCIETY_ADMIN && req.user.societyId && societyId !== req.user.societyId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: You can only access your own society.' });
+    }
+
     const society = store.findById('societies', societyId);
 
     if (!society) {
@@ -69,6 +74,10 @@ export function updateWorkerVerification(req, res) {
       return res.status(404).json({ success: false, message: 'Worker not found.' });
     }
 
+    if (req.user?.role === ROLES.SOCIETY_ADMIN && req.user.societyId && worker.societyId !== req.user.societyId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: Cannot manage workers outside your society.' });
+    }
+
     const updatedCerts = (worker.certifications || []).map(c => {
       if (!certCode || c.code === certCode) {
         return { ...c, verified: verificationStatus === VERIFICATION_STATUS.VERIFIED };
@@ -82,8 +91,8 @@ export function updateWorkerVerification(req, res) {
     });
 
     store.logAudit({
-      actorName: req.user.name,
-      actorRole: req.user.role,
+      actorName: req.user?.name || 'Society Admin',
+      actorRole: req.user?.role || 'society_admin',
       action: 'WORKER_VERIFICATION_MODIFIED',
       module: 'Society Admin',
       recordId: workerId,
@@ -104,6 +113,10 @@ export function updateSocietyConfig(req, res) {
   try {
     const { id } = req.params;
     const { coopContributionPercent, welfareFundPercent, coverageRadiusKm } = req.body;
+
+    if (req.user?.role === ROLES.SOCIETY_ADMIN && req.user.societyId && id !== req.user.societyId) {
+      return res.status(403).json({ success: false, message: 'Forbidden: Cannot edit parameters of another society.' });
+    }
 
     const updated = store.findByIdAndUpdate('societies', id, {
       ...(coopContributionPercent !== undefined && { coopContributionPercent: Number(coopContributionPercent) }),
